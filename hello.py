@@ -5,4 +5,4 @@ app= Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'hello World!'
+    return '<img src="http://clug.kr/~elwlwlwk/holo.png" />'
