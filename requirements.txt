@@ -5,6 +5,5 @@ Werkzeug==0.9.3
 distribute==0.6.10
 gunicorn==17.5
 itsdangerous==0.23
-reportbug==4.12.6
 virtualenv==1.4.9
 wsgiref==0.1.2
