@@ -1,8 +1,9 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 
 app= Flask(__name__)
 
 @app.route('/')
+@app.route('/index')
 def hello():
-    return '<img width="100%" src="http://clug.kr/~elwlwlwk/holo.png" />'
+    return render_template('index.html')
