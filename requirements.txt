@@ -3,7 +3,8 @@ Jinja2==2.7.1
 MarkupSafe==0.18
 Werkzeug==0.9.3
 distribute==0.6.10
+gevent==0.13.8
+greenlet==0.4.1
 gunicorn==17.5
 itsdangerous==0.23
-virtualenv==1.4.9
 wsgiref==0.1.2
