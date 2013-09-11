@@ -77,6 +77,10 @@ b{
 }
 div.content{
 	width: 80%;
+	min-height: 480px;
+	background:linear-gradient(to right, rgba(255,255,255,1),rgba(255,255,255,0.5),rgba(255,255,255,0.25)), url('http://clug.kr/~elwlwlwk/holo_resize.png') no-repeat right bottom;
+	border-radius: 5px;
+	margin: 0px;
 }
 div.img{
 	margin: 0px auto;
