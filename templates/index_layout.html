@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Wisewolf</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+    <link href='http://fonts.googleapis.com/css?family=Anton' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div class="main">
+      <a href="/">
+        <div class="title">
+          <span class="title">WiseWolf</span>
+        </div>
+      </a>
+      <div class="right_menu">
+        <h2 class="nav">Navigation</h2>
+        <ul>
+          <li><a href="profile">Profile</a></li>
+        </ul>
+      </div>
+      <div class="content">
+        {% block body %}{% endblock %}
+      </div>
+    </div>
+    <footer>Creative by Ryan Rafe Lee</footer>
+  </body>
+</html>

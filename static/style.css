@@ -1,3 +1,19 @@
+a:link {
+	text-decoration:none;
+	color: #694634;
+}
+a:visited {
+	text-decoration:none;
+	color: #694634;
+}
+a:hover {
+	text-decoration:none;
+	color: #694634;
+}
+a:active {
+	text-decoration:none;
+	color: #694634;
+}
 div.title{
 	width: 100%;
 	background:linear-gradient(#44211e,#694634);
@@ -10,6 +26,7 @@ div.title{
 	padding-top: 15px;
 	padding-bottom: 15px;
 	text-shadow:2px 2px 0px rgba(0,0,0,0.25);
+	box-shadow:0px 0px 2px rgba(0,0,0,0.9);
 }
 span.title{
 	margin: 15px;
@@ -31,16 +48,21 @@ html{
 body{
 	width: 100%;
 	font-family: Arial, sans-serif;
+	margin: 0px;
+	margin-top: 10px;
+	padding: 0px;
 }
 div{
-	padding-top: 10px;
+	padding: 0px;
+	margin-top: 10px;
 }
 div.right_menu{
 	float: right;
 	width: 18%;
-	padding-left: 2%;
+	padding-left: 1%;
+	margin-left: 1%;
 }
-h2.nav, ul{
+h2, ul{
 	word-break: break-all;
 	padding: 0px;
 	margin: 0px;
@@ -49,13 +71,21 @@ h2.nav, ul{
 	font-weight: bold;
 	color:#694634;
 }
+b{
+	margin: 0px;
+	padding: 0px;
+}
 div.content{
 	width: 80%;
 }
+div.img{
+	margin: 0px auto;
+	width: 100%;
+}
 img.main_holo{
-	background: ;
 	width: 100%;
 	border-radius: 5px;
+	box-shadow:0px 0px 3px rgba(0,0,0,0.5);
 }
 
 ul{
