@@ -38,7 +38,11 @@ div.main{
 	box-shadow: 0px 0px 10px rgba(0,0,0,0.9);
 	border-radius: 5px;
 	padding: 5px;
+	padding-top: 40px;
 	margin: 0px auto;
+}
+ul, ol{
+	list-style:none outside none;
 }
 html{
 	width:90%;
@@ -49,7 +53,7 @@ body{
 	width: 100%;
 	font-family: Arial, sans-serif;
 	margin: 0px;
-	margin-top: 10px;
+	margin-top: 0px;
 	padding: 0px;
 }
 div{
@@ -78,7 +82,7 @@ b{
 div.content{
 	width: 80%;
 	min-height: 480px;
-	background:linear-gradient(to right, rgba(255,255,255,1),rgba(255,255,255,0.5),rgba(255,255,255,0.25)), url('http://clug.kr/~elwlwlwk/holo_resize.png') no-repeat right bottom;
+	background:linear-gradient(to right, rgba(255,255,255,1),rgba(255,255,255,0.5),rgba(255,255,255,0.25)), url('http://clug.kr/~elwlwlwk/holo_resize.png') repeat-x right bottom;
 	border-radius: 5px;
 	margin: 0px;
 }
@@ -102,5 +106,34 @@ footer{
 	margin-top: 30px;
 	color: rgb(102,102,102);
 	font-weight: bold;
-	font-size: 80%
+	font-size: 80%;
+}
+div.top_navi{
+	position: fixed;
+	right: 0px;
+	left: 0px;
+	background-image:linear-gradient(to bottom,rgb(34,34,34),rgb(17,17,17));
+	height: 30px;
+	margin: 0px;
+	padding: 0px;
+}
+div.wrap{
+	margin: 4px auto;
+	width: 80%;
+	height: 18px;
+}
+ul.top_navi{
+	margin: 0px;
+	padding: 0px;
+}
+ul.top_navi > li{
+	color: rgb(255,255,255);
+	padding: 0px 10px 0px 10px;
+	float: left;
+}
+ul.top_navi > li > a{
+	color: rgb(100,100,100);
+}
+ul.top_navi > li > a:hover{
+	color: rgb(250,250,250);
 }
