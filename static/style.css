@@ -74,7 +74,7 @@ b{
 div.content{
 	width: 100%;
 	min-height: 480px;
-	background:linear-gradient(to right, rgba(255,255,255,1),rgba(255,255,255,0.5),rgba(255,255,255,0.25)), url('http://clug.kr/~elwlwlwk/holo_resize.png') repeat-x right bottom;
+	background:linear-gradient(to right, rgba(255,255,255,1),rgba(255,255,255,0.5),rgba(255,255,255,0.25)), url('http://clug.kr/~elwlwlwk/pat.png') repeat-x right bottom;
 	border-radius: 5px;
 	margin: 0px;
 }
@@ -138,10 +138,11 @@ h2.right_nav{
 	padding: 10px;
 }
 ul.right_nav > li{
-	padding: 10px;
 	border-top: 1px solid rgba(255,255,255,0.25);
-	background: rgba(255,255,255,0.1);
+	background-image:linear-gradient(to bottom,rgba(255,255,255,0.07),rgba(255,255,255,0.15));
 }
 ul.right_nav > li > a{
 	color: #ddd;
+	padding: 10px;
+	display: block;
 }
