@@ -1,0 +1,22 @@
+{% extends "index_layout.html" %}
+{% block body %}
+<div>
+<h2>Login</h2>
+<div class="flash">
+{% for message in get_flashed_messages() %}
+{{ message }}
+{% endfor %}
+</div>
+<form action="{{ url_for('signup') }}" method=post>
+  <dl>
+    <dt>Username:
+	<dd><input type= text name= username>
+	<dt>Password:
+	<dd><input type= password name= password >
+	<dt>E-mail:
+	<dd><input type= text name= email>
+	<dd><input type= submit value= Signup >
+  </dl>
+</form>
+</div>
+{% endblock %}

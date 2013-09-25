@@ -105,6 +105,10 @@ ul.top_navi{
 	margin: 0px;
 	padding: 0px;
 }
+ul.signin{
+	position: fixed;
+	right: 0px;
+}
 ul.top_navi > li{
 	color: rgb(255,255,255);
 	padding: 0px 10px 0px 10px;

@@ -1,0 +1,15 @@
+{% extends "index_layout.html" %}
+{% block body %}
+<div>
+<h2>Login</h2>
+<form action="{{ url_for('signin') }}" method=post>
+  <dl>
+    <dt>Username or e-mail:
+	<dd><input type= text name= username>
+	<dt>Password:
+	<dd><input type= password name= password >
+	<dd><input type= submit value=Login >
+  </dl>
+</form>
+</div>
+{% endblock %}
