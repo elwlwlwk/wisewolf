@@ -10,9 +10,18 @@
     <div class="top_navi">
       <div class="wrap">
         <ul class="top_navi">
-          <li><a href="/">Home</a></li>
+          <li><a href="{{ url_for('index') }}">Home</a></li>
           <li><a href="/profile">Profile</a></li>
 	    </ul>
+        <ul class="top_navi signin">
+{% if not session.signed_in %}
+		  <li><a href="{{ url_for('signin') }}">Signin</a></li>
+		  <li><a href="{{ url_for('signup') }}">Signup</a></li>
+{% else %}
+		  <li>{{ session.user }}</li>
+          <li><a href="{{ url_for('signout') }}">Signout</a></li>
+{% endif %}
+		</ul>
       </div>
     </div>
 	<div class="right_menu">
