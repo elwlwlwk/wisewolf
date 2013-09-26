@@ -6,14 +6,16 @@ import member
 import psycopg2
 
 app= Flask(__name__)
-app.secrete_key= os.urandom(22)
+app.secret_key= os.urandom(24)
 app.debug= True
 app.config.from_object(__name__)
 
 con= None
 @app.before_request
 def before_request():
-	con= psycopg2.connect(database='holo', user='wisewolf')
+	con= psycopg2.connect(database='deh17pgu09nikp', user='wjfzhcasmhewjw',\
+password='8qMA0A33WirYdrnV5erw9DRiAY',\
+host='ec2-54-227-251-13.compute-1.amazonaws.com', port='5432')
 	g.db= con.cursor()
 
 @app.teardown_request
