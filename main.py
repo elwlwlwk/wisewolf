@@ -9,6 +9,8 @@ DEBUG= True
 SECRET_KEY= os.urandom(24)
 
 app= Flask(__name__)
+app.secret_key= os.urandom(24)
+app.debug= False 
 app.config.from_object(__name__)
 
 con= None
