@@ -3,37 +3,24 @@ from flask import Flask, render_template, g, request, session, redirect, url_for
 import sqlite3
 from contextlib import closing
 import member
+import psycopg2
 
-DATABASE='db/wisewolf.db'
-DEBUG= False
+DEBUG= True
 SECRET_KEY= os.urandom(24)
-DBInited= False;
 
 app= Flask(__name__)
 app.config.from_object(__name__)
 
-def connect_db():
-	return sqlite3.connect(app.config['DATABASE'])
-
-def init_db():
-	with closing(connect_db()) as db:
-		with app.open_resource('schema.sql', mode='r') as f:
-			db.cursor().executescript(f.read())
-		db.commit()
-	
-if DBInited== False:
-	init_db()
-	DBInited= True;
-
+con= None
 @app.before_request
 def before_request():
-	g.db= connect_db()
+	con= psycopg2.connect(database='holo', user='wisewolf')
+	g.db= con.cursor()
 
 @app.teardown_request
 def teardown_request(exception):
-	db= getattr(g, 'db', None)
-	if db is not None:
-		db.close()
+	if con:
+		con.close()
 	
 @app.route('/index')
 @app.route('/')
