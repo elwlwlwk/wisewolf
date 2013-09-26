@@ -5,12 +5,9 @@ from contextlib import closing
 import member
 import psycopg2
 
-DEBUG= True
-SECRET_KEY= os.urandom(24)
-
 app= Flask(__name__)
-app.secret_key= os.urandom(24)
-app.debug= False 
+app.secrete_key= os.urandom(22)
+app.debug= True
 app.config.from_object(__name__)
 
 con= None
