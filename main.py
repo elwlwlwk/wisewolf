@@ -3,13 +3,13 @@ from flask import Flask, render_template, g, request, session, redirect, url_for
 import sqlite3
 from contextlib import closing
 import psycopg2
-import config
 
 app= Flask(__name__)
 config_loc='DEV'
 
 # config flask app
 if('config.py' in os.listdir('./')):
+	import config
 	app.config.from_object('config.DevelopmentConfig')
 else:
 	config_loc='SERV'
