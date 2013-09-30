@@ -1,6 +1,6 @@
 import md5
-import main
 from flask import flash
+import main
 
 def signin_validation(username, password):
 	main.g.db.execute(\
@@ -9,7 +9,6 @@ def signin_validation(username, password):
 	if valid_pass== None:
 		return False
 	valid_pass= valid_pass[0]
-
 		
 	if valid_pass== hash_pass(password):
 		return True
