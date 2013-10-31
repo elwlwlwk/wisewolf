@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, g, request, session, redirect, url_for
+from flask import Flask, render_template, g, request, session, redirect, url_for, make_response
 import sqlite3
 from contextlib import closing
 import psycopg2
@@ -58,5 +58,20 @@ template_name='signup.html'))
 
 make_url_mapping()
 
+@app.route('/gallery')
+def gallery():
+	from flask import flash
+	img_list= os.listdir('./imgs')
+	for img in img_list:
+		flash(img)
+	return render_template("gallery.html") 
+
+@app.route("/imgs/<path:path>")
+def images(path):
+    fullpath = "./imgs/" + path
+    resp = make_response(open(fullpath).read())
+    resp.content_type = "image/jpeg"
+    return resp
+
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8080)
+	app.run(host='0.0.0.0', port=8000, debug= True)
