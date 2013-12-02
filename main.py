@@ -61,17 +61,33 @@ make_url_mapping()
 @app.route('/gallery')
 def gallery():
 	from flask import flash
-	img_list= os.listdir('./imgs')
+	gen_thumb()
+	img_list= os.listdir('./imgs/thumbgen')
 	for img in img_list:
 		flash(img)
 	return render_template("gallery.html") 
 
 @app.route("/imgs/<path:path>")
 def images(path):
-    fullpath = "./imgs/" + path
-    resp = make_response(open(fullpath).read())
-    resp.content_type = "image/jpeg"
-    return resp
+	gen_thumb()
+	fullpath = "./imgs/" + path
+	resp = make_response(open(fullpath).read())
+	resp.content_type = "image/jpeg"
+	return resp
+
+def gen_thumb():
+	from PIL import Image
+	img_list= os.listdir('./imgs')
+	img_list.remove('thumbnail')
+	img_list.remove('thumbgen')
+	if(len(img_list)== 0):
+		return
+	size= 150, 150
+	for img in img_list:
+		im= Image.open('./imgs/'+img)	
+		im.thumbnail(size, Image.ANTIALIAS)
+		im.save('./imgs/thumbnail/'+img)
+		os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=8000, debug= True)
