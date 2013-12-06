@@ -90,4 +90,4 @@ def gen_thumb():
 		os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8000, debug= True)
+	app.run(host='0.0.0.0', port=6974, debug= True)
