@@ -3,6 +3,7 @@ from flask import Flask, render_template, g, request, session, redirect, url_for
 import sqlite3
 from contextlib import closing
 import psycopg2
+from redis_session import RedisSessionInterface
 
 app= Flask(__name__)
 config_loc='DEV'
@@ -12,6 +13,7 @@ if('config.py' in os.listdir('./')):
 	import config
 	app.config.from_object('config.DevelopmentConfig')
 else:
+	app.session_interface= RedisSessionInterface()
 	config_loc='SERV'
 	app.secret_key= os.urandom(24)
 	app.debug= False
