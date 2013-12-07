@@ -25,7 +25,7 @@ con= None
 @app.before_request
 def before_request():
 	if config_loc == 'DEV':
-		con= psycopg2.connect(database='holo', user='wisewolf')
+		con= psycopg2.connect(database='wisewolf', user='elwlwlwk')
 	if config_loc == 'SERV':
 		con= psycopg2.connect(database='deh17pgu09nikp', user='wjfzhcasmhewjw',\
 password='8qMA0A33WirYdrnV5erw9DRiAY',\
@@ -92,4 +92,4 @@ def gen_thumb():
 		os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=6974, debug= True)
+	app.run(host='0.0.0.0', port=6974)
