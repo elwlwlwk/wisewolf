@@ -3,6 +3,7 @@ from flask import Flask, render_template, g, request, session, redirect, url_for
 import sqlite3
 from contextlib import closing
 import psycopg2
+from redis_session import RedisSessionInterface
 
 app= Flask(__name__)
 config_loc='DEV'
@@ -12,6 +13,7 @@ if('config.py' in os.listdir('./')):
 	import config
 	app.config.from_object('config.DevelopmentConfig')
 else:
+	app.session_interface= RedisSessionInterface()
 	config_loc='SERV'
 	app.secret_key= os.urandom(24)
 	app.debug= False
@@ -23,7 +25,7 @@ con= None
 @app.before_request
 def before_request():
 	if config_loc == 'DEV':
-		con= psycopg2.connect(database='holo', user='wisewolf')
+		con= psycopg2.connect(database='wisewolf', user='elwlwlwk')
 	if config_loc == 'SERV':
 		con= psycopg2.connect(database='deh17pgu09nikp', user='wjfzhcasmhewjw',\
 password='8qMA0A33WirYdrnV5erw9DRiAY',\
@@ -93,4 +95,4 @@ def gen_thumb():
 			print e	
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=6974, debug= False)
+	app.run(host='0.0.0.0', port=6974)
