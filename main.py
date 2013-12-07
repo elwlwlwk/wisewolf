@@ -84,10 +84,13 @@ def gen_thumb():
 		return
 	size= 150, 150
 	for img in img_list:
-		im= Image.open('./imgs/'+img)	
-		im.thumbnail(size, Image.ANTIALIAS)
-		im.save('./imgs/thumbnail/'+img)
-		os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
+		try:
+			im= Image.open('./imgs/'+img)	
+			im.thumbnail(size, Image.ANTIALIAS)
+			im.save('./imgs/thumbnail/'+img)
+			os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
+		except IOError, e:
+			print e	
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8000, debug= True)
+	app.run(host='0.0.0.0', port=6974, debug= False)
