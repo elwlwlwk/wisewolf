@@ -24,12 +24,9 @@ con= None
 
 @app.before_request
 def before_request():
-	if config_loc == 'DEV':
-		con= psycopg2.connect(database='wisewolf', user='elwlwlwk')
-	if config_loc == 'SERV':
-		con= psycopg2.connect(database='deh17pgu09nikp', user='wjfzhcasmhewjw',\
-password='8qMA0A33WirYdrnV5erw9DRiAY',\
-host='ec2-54-227-251-13.compute-1.amazonaws.com', port='5432')
+	con= psycopg2.connect(database='wisewolf', user='elwlwlwk',\
+password='dlalsrb3!',\
+host='165.194.104.192')
 	g.db= con.cursor()
 
 # disconnect database

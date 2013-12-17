@@ -1,6 +1,6 @@
-import md5
 from flask import flash
 import main
+from hashlib import md5, sha512
 
 def signin_validation(username, password):
 	main.g.db.execute(\
@@ -35,5 +35,5 @@ values ('%s','%s','%s');" % (username, hash_pass(password), email))
 	return True
 	
 def hash_pass(password):
-	return md5.md5(md5.md5(password+"wisewolf").hexdigest()\
-+md5.md5("holo"+password).hexdigest()).hexdigest()
+	return sha512(md5(password+"wisewolf").hexdigest()\
++md5("holo"+password).hexdigest()+"holo_the_wisewolf").hexdigest()
