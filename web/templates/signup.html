@@ -8,15 +8,19 @@
 {% endfor %}
 </div>
 <form action="{{ url_for('signup') }}" method=post>
-  <dl>
-    <dt>Username:
-	<dd><input type= text name= username>
-	<dt>Password:
-	<dd><input type= password name= password >
-	<dt>E-mail:
-	<dd><input type= text name= email>
-	<dd><input type= submit value= Signup >
-  </dl>
+  <div class="form-group col-md-6">
+    <dl>
+      <dt>Username:
+      <dd><input class="form-control" type= text name= username>
+      <dt>Password:
+      <dd><input class="form-control" type= password name= password >
+      <dt>E-mail:
+      <dd><input class="form-control" type= text name= email>
+      <p>
+        <dd><button class="btn btn-primary" type="submit" >Sign in</button>
+	  </p>
+    </dl>
+  </div>
 </form>
 </div>
 {% endblock %}

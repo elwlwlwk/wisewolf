@@ -2,47 +2,75 @@
 <html>
   <head>
     <title>Wisewolf</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+	<script src="https://code.jquery.com/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_with_boot.css') }}" />
+<!--    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />-->
 <!--    <link rel="stylesheet" type="text/css" href="http://wisewolf.herokuapp.com/static/style.css" />-->
     <link href='http://fonts.googleapis.com/css?family=Anton' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
   </head>
   <body>
-    <div class="top_navi">
-      <div class="wrap">
-        <ul class="top_navi">
-          <li><a href="{{ url_for('index') }}">Home</a></li>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-header">
+
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+    <span class="sr-only">Toggle navigation</span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">Wisewolf</a>
+    </div>
+        <div class="container">
+		  <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/gallery">Gallery</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+{% if not session.signed_in %}
+            <li><a href="{{ url_for('signin') }}">Signin</a></li>
+            <li><a href="{{ url_for('signup') }}">Signup</a></li>
+{% else %}
+            <li class="dropdown">
+			  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+			    {{ session.user }}
+			    <b class="caret"></b>
+			  </a>
+                <ul class="dropdown-menu">
+                <li><a>Stat</a></li>
+                </ul>
+			</li>
+            <li><a href="{{ url_for('signout') }}">Signout</a></li>
+{% endif %}
+          </ul>
+		  </div>
+      </div>
+    </div>
+<!--
+	<a href="/">
+      <div class="subhead title">
+        <span class="title">WiseWolf</span>
+      </div>
+    </a>
+-->
+    <div class="continer">
+	  <div id="sidebar" class="col-md-2">
+        <div class="nav nav-list affix-top">
+          <h2 class="right_nav">Navigation</h2>
+          <li><a href="/">Home</a></li>
           <li><a href="/profile">Profile</a></li>
           <li><a href="/gallery">Gallery</a></li>
-	    </ul>
-        <ul class="top_navi signin">
-{% if not session.signed_in %}
-		  <li><a href="{{ url_for('signin') }}">Signin</a></li>
-		  <li><a href="{{ url_for('signup') }}">Signup</a></li>
-{% else %}
-		  <li>{{ session.user }}</li>
-          <li><a href="{{ url_for('signout') }}">Signout</a></li>
-{% endif %}
-		</ul>
-      </div>
-    </div>
-	<div class="right_menu">
-      <h2 class="right_nav">Navigation</h2>
-      <ul class="right_nav">
-	<li><a href="/">Home</a></li>
-        <li><a href="/profile">Profile</a></li>
-	<li><a href="/gallery">Gallery</a></li>
-      </ul>
-    </div>
-    <div class="main">
-      <a href="/">
-        <div class="title">
-          <span class="title">WiseWolf</span>
         </div>
-      </a>
-      <div class="content">
-        {% block body %}{% endblock %}
-      </div>
+	  </div>
+        <div class= "col-md-10">
+          <div class="content">
+            {% block body %}{% endblock %}
+          </div>
+        </div>
     </div>
-    <footer>Creative by Ryan Rafe Lee</footer>
+	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
   </body>
 </html>
