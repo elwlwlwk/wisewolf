@@ -1,11 +1,12 @@
 import os
-from flask import Flask, render_template, g, request, session, redirect, url_for, make_response
+from flask import render_template, g, request, session, redirect, url_for, make_response
 import sqlite3
 from contextlib import closing
 import psycopg2
 from redis_session import RedisSessionInterface
+from web import app
 
-app= Flask(__name__)
+
 config_loc='DEV'
 
 # config flask app
@@ -57,11 +58,40 @@ template_name='signup.html'))
 
 make_url_mapping()
 
+from datetime import timedelta
+CHATTING_ROOM_EXPIRE= timedelta(hours=24)
+
+@app.route('/chatting/<path:path>')
+def chattingroom(path):
+#	print "path: "+path
+	if path =='new':
+		import os
+		import binascii
+		import time
+		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
+		return redirect("/chatting/"+room_id)
+	prefix= "chat_room:"
+	from redis import Redis
+	r= Redis(db=1)
+	val= r.get(prefix+path)
+	if val is not None:
+		enter_existing_room()
+	else:
+		create_new_room(r, prefix, path)
+	return render_template("chatting_room.html")
+	
+def enter_existing_room():
+	pass
+def create_new_room(r, prefix, path):
+	r.setex(prefix + path, '',\
+int(CHATTING_ROOM_EXPIRE.total_seconds()))
+
+	
 @app.route('/gallery')
 def gallery():
 	from flask import flash
 	gen_thumb()
-	img_list= os.listdir('./imgs/thumbgen')
+	img_list= os.listdir('./web/imgs/thumbgen')
 	for img in img_list:
 		flash(img)
 	return render_template("gallery.html") 
@@ -69,14 +99,14 @@ def gallery():
 @app.route("/imgs/<path:path>")
 def images(path):
 	gen_thumb()
-	fullpath = "./imgs/" + path
+	fullpath = "./web/imgs/" + path
 	resp = make_response(open(fullpath).read())
 	resp.content_type = "image/jpeg"
 	return resp
 
 def gen_thumb():
 	from PIL import Image
-	img_list= os.listdir('./imgs')
+	img_list= os.listdir('./web/imgs')
 	img_list.remove('thumbnail')
 	img_list.remove('thumbgen')
 	if(len(img_list)== 0):
@@ -84,10 +114,10 @@ def gen_thumb():
 	size= 150, 150
 	for img in img_list:
 		try:
-			im= Image.open('./imgs/'+img)	
+			im= Image.open('./web/imgs/'+img)
 			im.thumbnail(size, Image.ANTIALIAS)
-			im.save('./imgs/thumbnail/'+img)
-			os.system('mv ./imgs/'+img+' ./imgs/thumbgen')
+			im.save('./web/imgs/thumbnail/'+img)
+			os.system('mv ./web/imgs/'+img+' ./web/imgs/thumbgen')
 		except IOError, e:
 			print e	
 

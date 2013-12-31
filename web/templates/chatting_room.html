@@ -1,0 +1,21 @@
+{% extends "index_layout.html" %}
+{% block body %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/chat_app.js') }}"></script>
+<div>
+<div class="wrapper col-md-12" >
+<div class="chat_log" id="chat_log" style="height: 300px; overflow-y:scroll; float:left; width:85%">
+</div>
+<div class="" id="chatters" style="height:300px;width:15%; float:right">
+</div>
+<div class="col-md-12">
+<form action="#">
+<textarea class="form-control chat_to_send" id="chat_to_send" rows="3" onkeypress="return handleKeyPress(event)" style="float:left; width:85%">
+</textarea>
+<button class="btn btn-primary" style="width:15%; height:90px;" >Send</button>
+</form>
+</div>
+
+
+</div>
+</div>
+{% endblock %}

@@ -1295,7 +1295,7 @@ pre code {
   }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .col-md-1,
   .col-md-2,
   .col-md-3,
