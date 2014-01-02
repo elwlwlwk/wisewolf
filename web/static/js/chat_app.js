@@ -35,14 +35,17 @@ function roomStatHandler(myData){
 	}
 }
 	
+function sendMessage(){
+	var chat_to_send= document.getElementById("chat_to_send");
+
+	msg= chat_to_send.value;
+	send_msg_server(msg);
+	chat_to_send.value='';
+}
 
 function handleKeyPress(e){
 	if(e.keyCode === 13){
-		var chat_to_send= document.getElementById("chat_to_send");
-
-		msg= chat_to_send.value;
-		send_msg_server(msg);
-		chat_to_send.value='';
+		sendMessage();
 		return false;
 	}
 }

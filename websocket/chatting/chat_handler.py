@@ -17,6 +17,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 			chatting_room_session.add_room(req_room)
 			chatting_room_session.add_user_to_room(self, req_room)
 			self.my_room.broadcast_room_stat()
+			self.my_room.send_cur_chat_log(self)
 
 		else:
 			print "invalid access"
@@ -27,6 +28,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 
 	def on_close(self):
 		self.my_room.remove_chatter(self)
+		self.my_room.broadcast_room_stat()
 	
 	def set_my_room(self, room_seq):
 		self.my_room= room_seq
