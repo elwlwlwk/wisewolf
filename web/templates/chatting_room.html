@@ -1,6 +1,10 @@
 {% extends "index_layout.html" %}
-{% block body %}
+
+{% block head %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/chat_app.js') }}"></script>
+{% endblock %}
+
+{% block body %}
 <div>
 <div class="wrapper col-md-12" >
 <div class="chat_log" id="chat_log" style="height: 300px; overflow-y:scroll; float:left; width:85%">
@@ -10,7 +14,7 @@
 <div class="col-md-12">
 <textarea class="form-control chat_to_send" id="chat_to_send" rows="3" onkeypress="return handleKeyPress(event)" style="float:left; width:85%">
 </textarea>
-<button class="btn btn-primary" style="width:15%; height:90px;" onclick="sendMessage()" >Send</button>
+<button class="btn btn-primary" style="width:15%; height:90px;" onclick="sendChatMessage()" >Send</button>
 </div>
 
 

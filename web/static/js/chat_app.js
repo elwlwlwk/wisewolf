@@ -17,6 +17,9 @@ function messageHandler(e){
 		case "room_stat":
 			roomStatHandler(myData);
 			break;
+		case "heartbeat":
+			heartbeatHandler(myData);
+			break;
 	}
 }
 
@@ -34,23 +37,31 @@ function roomStatHandler(myData){
 		chatters_list.innerHTML+="<p>"+chatters[i]+"</p>";
 	}
 }
-	
-function sendMessage(){
-	var chat_to_send= document.getElementById("chat_to_send");
 
-	msg= chat_to_send.value;
-	send_msg_server(msg);
+function heartbeatHandler(myData){
+	var message={};
+	message["proto_type"]= "heartbeat";
+	message["heartbeat_key"]=myData["heartbeat_key"];
+	send_msg_server(message);
+}
+	
+function sendChatMessage(){
+	var chat_to_send= document.getElementById("chat_to_send");
+	var message={};
+	message["proto_type"]="chat_message";
+	message["message"]= chat_to_send.value;
+	send_msg_server(message);
 	chat_to_send.value='';
 }
 
 function handleKeyPress(e){
 	if(e.keyCode === 13){
-		sendMessage();
+		sendChatMessage();
 		return false;
 	}
 }
 function send_msg_server(msg){
-	ws.send(msg);
+	ws.send(JSON.stringify(msg));
 }
 
 window.onload= connect_ws_server;

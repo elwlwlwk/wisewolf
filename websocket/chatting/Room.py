@@ -1,13 +1,20 @@
 import json
 from redis import Redis
+from time import time
+from os import urandom
+from flask import Markup
+import binascii
 
 class Room:
 	def __init__(self, room_seq):
+		self.chat_seq= 0
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.chatter_names=[]
-		self.redis_conn= Redis(db=1)		
+		self.redis_conn= Redis(db=1)
 		self.prefix="chat_room:"
+		self.heartbeat_time= int(time())
+		self.heartbeat_key= urandom(12)
 
 	def add_chatter(self, chatter):
 		self.chatters.append(chatter)
@@ -16,33 +23,38 @@ class Room:
 		
 	def broadcast(self, message):
 		for chatter in self.chatters:
-			chatter.write_message(message)
+			self.write_message(chatter, message)
 	
 	def unicast(self, chatter, message):
 		if chatter in self.chatters:
-			chatter.write_message(message)
+			self.write_message(chatter, message)
 
 	def remove_chatter(self, chatter):
 		self.chatters.remove(chatter)
 		self.chatter_names.remove(chatter.get_name())
-
-	def broadcast_chat(self, chatter, message):
+	
+	def assemble_chat(self, chatter, message):
 		chat_message={}
 		chat_message["proto_type"]= "chat_message"
 		chat_message["sender"]= chatter.get_name()
-		chat_message["message"]= message
+		chat_message["message"]= Markup.escape(message["message"])
+		chat_message["chat_seq"]= self.chat_seq
+		self.chat_seq+= 1
+		return chat_message
+
+	def broadcast_chat(self, chatter, message):
+		chat_message= self.assemble_chat(chatter, message)
 		self.write_chat_redis(chat_message)
-		self.broadcast(json.dumps(chat_message))
+		self.broadcast(chat_message)
 		
 	def broadcast_room_stat(self):
 		room_stat={}
 		room_stat["proto_type"]="room_stat"
 		room_stat["room_seq"]= self.room_seq
 		room_stat["chatters"]= self.chatter_names
-		self.broadcast(json.dumps(room_stat))
+		self.broadcast(room_stat)
 	
 	def write_chat_redis(self, chat_message):
-		import json
 		chat_log=[]
 		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
 		if loaded_data != '':
@@ -52,12 +64,45 @@ class Room:
 
 	def send_cur_chat_log(self, chatter):
 		chat_log= self.load_chat_redis()
-		for chat in chat_log:
-			self.unicast(chatter, chat)
+		if chat_log!= '':
+			for chat in chat_log:
+				self.unicast(chatter, json.loads(chat))
 		
 	def load_chat_redis(self):
-		import json
 		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
 		if loaded_data != '':
 			return json.loads(loaded_data)
 		return ''
+	
+	def write_message(self, chatter, message):
+		if message["proto_type"]!= "heartbeat":
+			self.send_heartbeat()
+		if chatter is not None:
+			chatter.write_message(json.dumps(message))
+	
+	def message_handler(self, chatter, message):# TODO have to change message to json
+		loaded_msg= json.loads(message)
+		if loaded_msg["proto_type"]== "chat_message":
+			self.broadcast_chat(chatter, loaded_msg)
+		elif loaded_msg["proto_type"]== "heartbeat":
+			self.heartbeat_handler(chatter, loaded_msg)
+
+	def send_heartbeat(self):
+		cur_time= int(time())
+		if cur_time- self.heartbeat_time >= 5:
+			self.heartbeat_key= binascii.b2a_hex(urandom(12))
+			heartbeat_msg={}
+			heartbeat_msg["proto_type"]= "heartbeat"
+			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
+			for chatter in self.chatters:
+				if chatter.alive== -2:
+					self.remove_chatter(chatter)
+					chatter.close()
+					self.broadcast_room_stat()
+				else:
+					chatter.alive-= 1
+					self.write_message(chatter, heartbeat_msg)
+			self.heartbeat_time= cur_time
+	def heartbeat_handler(self, chatter, message):
+		if message["heartbeat_key"]== self.heartbeat_key:
+			chatter.alive= 0

@@ -7,6 +7,7 @@ chatting_room_session= ChattingRoomSession()
 
 class ChattingHandler(tornado.websocket.WebSocketHandler):
 	def __init__(self, request, spec_kwargs):
+		self.alive= 0
 		self.name= binascii.b2a_hex(os.urandom(2))
 		self.my_room= None
 		tornado.websocket.WebSocketHandler.__init__(self, request, spec_kwargs)
@@ -24,9 +25,10 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 			self.close()
 
 	def on_message(self, message):
-		self.my_room.broadcast_chat(self, message)
+		self.my_room.message_handler(self, message)
 
 	def on_close(self):
+		print "on_close"
 		self.my_room.remove_chatter(self)
 		self.my_room.broadcast_room_stat()
 	

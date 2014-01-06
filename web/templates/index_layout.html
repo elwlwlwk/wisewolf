@@ -9,6 +9,7 @@
 <!--    <link rel="stylesheet" type="text/css" href="http://wisewolf.herokuapp.com/static/style.css" />-->
     <link href='http://fonts.googleapis.com/css?family=Anton' rel='stylesheet' type='text/css'>
 	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
+    {% block head %}{% endblock %}
   </head>
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
