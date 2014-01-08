@@ -4,7 +4,7 @@ import sqlite3
 from contextlib import closing
 import psycopg2
 from redis_session import RedisSessionInterface
-from web import app
+from wisewolf.web import app
 
 
 config_loc='DEV'
@@ -91,7 +91,7 @@ int(CHATTING_ROOM_EXPIRE.total_seconds()))
 def gallery():
 	from flask import flash
 	gen_thumb()
-	img_list= os.listdir('./web/imgs/thumbgen')
+	img_list= os.listdir('./wisewolf/web/imgs/thumbgen')
 	for img in img_list:
 		flash(img)
 	return render_template("gallery.html") 
@@ -99,14 +99,14 @@ def gallery():
 @app.route("/imgs/<path:path>")
 def images(path):
 	gen_thumb()
-	fullpath = "./web/imgs/" + path
+	fullpath = "./wisewolf/web/imgs/" + path
 	resp = make_response(open(fullpath).read())
 	resp.content_type = "image/jpeg"
 	return resp
 
 def gen_thumb():
 	from PIL import Image
-	img_list= os.listdir('./web/imgs')
+	img_list= os.listdir('./wisewolf/web/imgs')
 	img_list.remove('thumbnail')
 	img_list.remove('thumbgen')
 	if(len(img_list)== 0):
@@ -114,10 +114,10 @@ def gen_thumb():
 	size= 150, 150
 	for img in img_list:
 		try:
-			im= Image.open('./web/imgs/'+img)
+			im= Image.open('./wisewolf/web/imgs/'+img)
 			im.thumbnail(size, Image.ANTIALIAS)
-			im.save('./web/imgs/thumbnail/'+img)
-			os.system('mv ./web/imgs/'+img+' ./web/imgs/thumbgen')
+			im.save('./wisewolf/web/imgs/thumbnail/'+img)
+			os.system('mv ./wisewolf/web/imgs/'+img+' ./wisewolf/web/imgs/thumbgen')
 		except IOError, e:
 			print e	
 

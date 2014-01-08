@@ -1,7 +1,7 @@
 import tornado.websocket
 import os
 import binascii
-from websocket.chatting.ChattingRoomSession import ChattingRoomSession
+from wisewolf.websocket.chatting.ChattingRoomSession import ChattingRoomSession
 
 chatting_room_session= ChattingRoomSession()
 
@@ -14,7 +14,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		pass
 	def open(self):
 		req_room= self.request.uri.split("/")[3]
-		if chatting_room_session.validate_room(req_room)== True:
+		if chatting_room_session.validate_room(req_room):
 			chatting_room_session.add_room(req_room)
 			chatting_room_session.add_user_to_room(self, req_room)
 			self.my_room.broadcast_room_stat()

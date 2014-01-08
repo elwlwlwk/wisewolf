@@ -1,4 +1,5 @@
-from websocket.chatting.Room import Room
+from wisewolf.websocket.chatting.Room import Room
+from wisewolf.websocket.chatting import redis_RoomSession
 
 class ChattingRoomSession:
 	def __init__(self):
@@ -14,8 +15,7 @@ class ChattingRoomSession:
 	
 	def validate_room(self, req_room):
 		prefix= "chat_room:"
-		from redis import Redis
-		r= Redis(db=1)
+		r= redis_RoomSession
 		val= r.get(prefix+req_room)
 		if val is None:
 			return False
