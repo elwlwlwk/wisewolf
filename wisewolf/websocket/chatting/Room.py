@@ -1,9 +1,11 @@
 import json
+import binascii
+
 from time import time
 from os import urandom
 from flask import Markup
-import binascii
 from types import *
+
 from wisewolf.websocket.chatting import redis_RoomSession
 
 class Room:
@@ -81,7 +83,7 @@ class Room:
 		if type(chatter) is not None:
 			chatter.write_message(json.dumps(message))
 	
-	def message_handler(self, chatter, message):# TODO have to change message to json
+	def message_handler(self, chatter, message):
 		loaded_msg= json.loads(message)
 		if loaded_msg["proto_type"]== "chat_message":
 			self.broadcast_chat(chatter, loaded_msg)
@@ -107,3 +109,6 @@ class Room:
 	def heartbeat_handler(self, chatter, message):
 		if message["heartbeat_key"]== self.heartbeat_key:
 			chatter.alive= 0
+	
+	def save_chat_mongo(self):
+		pass

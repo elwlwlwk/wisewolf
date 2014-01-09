@@ -5,6 +5,7 @@ from contextlib import closing
 import psycopg2
 from redis_session import RedisSessionInterface
 from wisewolf.web import app
+from wisewolf.websocket.chatting import redis_RoomSession
 
 
 config_loc='DEV'
@@ -71,8 +72,7 @@ def chattingroom(path):
 		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
 		return redirect("/chatting/"+room_id)
 	prefix= "chat_room:"
-	from redis import Redis
-	r= Redis(db=1)
+	r= redis_RoomSession
 	val= r.get(prefix+path)
 	if val is not None:
 		enter_existing_room()

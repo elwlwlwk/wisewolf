@@ -1,0 +1,62 @@
+[1mdiff --git a/wisewolf/web/main.py b/wisewolf/web/main.py[m
+[1mindex f570add..cd853a9 100644[m
+[1m--- a/wisewolf/web/main.py[m
+[1m+++ b/wisewolf/web/main.py[m
+[36m@@ -5,6 +5,7 @@[m [mfrom contextlib import closing[m
+ import psycopg2[m
+ from redis_session import RedisSessionInterface[m
+ from wisewolf.web import app[m
+[32m+[m[32mfrom wisewolf.websocket.chatting import redis_RoomSession[m
+ [m
+ [m
+ config_loc='DEV'[m
+[36m@@ -71,8 +72,7 @@[m [mdef chattingroom(path):[m
+ 		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))[m
+ 		return redirect("/chatting/"+room_id)[m
+ 	prefix= "chat_room:"[m
+[31m-	from redis import Redis[m
+[31m-	r= Redis(db=1)[m
+[32m+[m	[32mr= redis_RoomSession[m
+ 	val= r.get(prefix+path)[m
+ 	if val is not None:[m
+ 		enter_existing_room()[m
+[1mdiff --git a/wisewolf/web/templates/login.html b/wisewolf/web/templates/login.html[m
+[1mdeleted file mode 100644[m
+[1mindex 8b13789..0000000[m
+[1m--- a/wisewolf/web/templates/login.html[m
+[1m+++ /dev/null[m
+[36m@@ -1 +0,0 @@[m
+[31m-[m
+[1mdiff --git a/wisewolf/websocket/chatting/Room.py b/wisewolf/websocket/chatting/Room.py[m
+[1mindex d427631..2810776 100644[m
+[1m--- a/wisewolf/websocket/chatting/Room.py[m
+[1m+++ b/wisewolf/websocket/chatting/Room.py[m
+[36m@@ -1,9 +1,11 @@[m
+ import json[m
+[32m+[m[32mimport binascii[m
+[32m+[m
+ from time import time[m
+ from os import urandom[m
+ from flask import Markup[m
+[31m-import binascii[m
+ from types import *[m
+[32m+[m
+ from wisewolf.websocket.chatting import redis_RoomSession[m
+ [m
+ class Room:[m
+[36m@@ -81,7 +83,7 @@[m [mclass Room:[m
+ 		if type(chatter) is not None:[m
+ 			chatter.write_message(json.dumps(message))[m
+ 	[m
+[31m-	def message_handler(self, chatter, message):# TODO have to change message to json[m
+[32m+[m	[32mdef message_handler(self, chatter, message):[m
+ 		loaded_msg= json.loads(message)[m
+ 		if loaded_msg["proto_type"]== "chat_message":[m
+ 			self.broadcast_chat(chatter, loaded_msg)[m
+[36m@@ -107,3 +109,6 @@[m [mclass Room:[m
+ 	def heartbeat_handler(self, chatter, message):[m
+ 		if message["heartbeat_key"]== self.heartbeat_key:[m
+ 			chatter.alive= 0[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef save_chat_mongo(self):[m
+[32m+[m		[32mpass[m
