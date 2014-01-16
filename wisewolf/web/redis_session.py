@@ -5,6 +5,8 @@ from redis import Redis
 from werkzeug.datastructures import CallbackDict
 from flask.sessions import SessionInterface, SessionMixin
 
+from wisewolf.web import redis_UserSession
+
 class RedisSession(CallbackDict, SessionMixin):
 	def __init__(self, initial=None, sid=None, new=False):
 		def on_update(self):

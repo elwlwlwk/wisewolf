@@ -2,7 +2,7 @@ import tornado.web
 from tornado.wsgi import WSGIContainer
 from tornado.web import FallbackHandler, RequestHandler, Application
 
-from web.main import app
+from wisewolf.web.main import app
 from websocket.chatting.chat_handler import ChattingHandler
 
 	

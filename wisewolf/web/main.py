@@ -82,6 +82,7 @@ def chattingroom(path):
 	
 def enter_existing_room():
 	pass
+
 def create_new_room(r, prefix, path):
 	r.setex(prefix + path, '',\
 int(CHATTING_ROOM_EXPIRE.total_seconds()))
