@@ -29,7 +29,6 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 
 	def on_close(self):
 		self.my_room.remove_chatter(self)
-		self.my_room.broadcast_room_stat()
 	
 	def set_my_room(self, room_seq):
 		self.my_room= room_seq

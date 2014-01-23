@@ -5,16 +5,23 @@ from time import time
 from os import urandom
 from flask import Markup
 from types import *
+from operator import itemgetter
 
 from wisewolf.websocket.chatting import redis_RoomSession
 
+from pymongo import MongoClient
+
 class Room:
-	def __init__(self, room_seq, session=redis_RoomSession):
+	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None):
 		self.chat_seq= 0
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.chatters_name=[]
 		self.redis_conn= session
+		db= MongoClient().wisewolf
+		db.authenticate("wisewolf","dlalsrb3!")
+		room_collection= db.rooms
+		self.room_collection= room_collection
 		self.prefix="chat_room:"
 		self.heartbeat_time= int(time())
 		self.heartbeat_key= urandom(12)
@@ -35,7 +42,6 @@ class Room:
 				if chatter.alive== -2:
 					self.remove_chatter(chatter)
 					chatter.close()
-					self.broadcast_room_stat()
 				else:
 					chatter.alive-= 1
 					self.write_message(chatter, heartbeat_msg)
@@ -48,7 +54,10 @@ class Room:
 	def write_message(self, chatter, message):
 		if message["proto_type"]!= "heartbeat":
 			self.send_heartbeat()
-		if type(chatter) is not None:
+		if type(chatter.ws_connection) is not NoneType:
+			if message["proto_type"]== "chat_message":
+				if message["chat_seq"] != 0 and message["chat_seq"] % 40 is 0:
+					self.save_chat_mongo()
 			chatter.write_message(json.dumps(message))
 
 	def broadcast(self, message):
@@ -62,6 +71,7 @@ class Room:
 	def remove_chatter(self, chatter):
 		self.chatters.remove(chatter)
 		self.chatters_name.remove(chatter.get_name())
+		self.broadcast_room_stat()
 	
 	def assemble_chat(self, chatter, message):
 		chat_message={}
@@ -73,12 +83,8 @@ class Room:
 		return chat_message
 
 	def write_chat_redis(self, chat_message):
-		chat_log=[]
-		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
-		if loaded_data != '':
-			chat_log= json.loads(loaded_data)			
-		chat_log.append(json.dumps(chat_message))
-		self.redis_conn.set(self.prefix+ self.room_seq, json.dumps(chat_log))
+		chat_log=[chat_message]
+		self.write_messages_redis(chat_log)
 
 	def broadcast_chat(self, chatter, message):
 		chat_message= self.assemble_chat(chatter, message)
@@ -92,25 +98,20 @@ class Room:
 		room_stat["chatters"]= self.chatters_name
 		self.broadcast(room_stat)
 	
-	def write_chat_redis(self, chat_message):
-		chat_log=[]
-		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
-		if loaded_data != '':
-			chat_log= json.loads(loaded_data)			
-		chat_log.append(json.dumps(chat_message))
-		self.redis_conn.set(self.prefix+ self.room_seq, json.dumps(chat_log))
-
 	def load_chat_redis(self):
 		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
+		loaded_messages=[]
 		if loaded_data != '':
-			return json.loads(loaded_data)
-		return ''
+			messages= json.loads(loaded_data)
+			for message in messages:
+				loaded_messages.append(message)
+		return loaded_messages
 
 	def send_cur_chat_log(self, chatter):
 		chat_log= self.load_chat_redis()
 		if chat_log!= '':
 			for chat in chat_log:
-				self.unicast(chatter, json.loads(chat))
+				self.unicast(chatter, chat)
 		
 	def message_handler(self, chatter, message):
 		loaded_msg= json.loads(message)
@@ -119,5 +120,30 @@ class Room:
 		elif loaded_msg["proto_type"]== "heartbeat":
 			self.heartbeat_handler(chatter, loaded_msg)
 
-	def save_chat_mongo(self):
-		pass
+	def extract_exceed_messages(self, messages, threshold= 20):
+		loaded_messages=[]
+		for message in messages:
+			loaded_messages.append(message)
+			loaded_messages= sorted(loaded_messages, key=itemgetter("chat_seq"))
+
+		if len(messages)> threshold:
+			return loaded_messages[0: len(messages)-threshold], loaded_messages[len(messages)-threshold:]
+		else:
+			return [],loaded_messages
+	
+	def write_messages_redis(self, messages, append= True):
+		if append is True:
+			chat_log= self.load_chat_redis()+ messages
+		else:
+			chat_log= messages
+		self.redis_conn.set(self.prefix+ self.room_seq, json.dumps(chat_log))
+
+	def save_chat_mongo(self, threshold= 20):
+		msg_to_mongo, msg_to_redis= self.extract_exceed_messages(self.load_chat_redis(), threshold= threshold)
+		self.write_messages_redis(msg_to_redis, append= False)
+		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+		if room_document is None:
+			room_data={"room_seq":self.room_seq,"chat_log":msg_to_mongo}
+			self.room_collection.insert(room_data)
+		else:
+			self.room_collection.update({"room_seq":self.room_seq},{"$set":{"chat_log":room_document["chat_log"]+msg_to_mongo}})
