@@ -9,7 +9,7 @@ class ChattingRoomSession:
 	def add_room(self, room_seq):
 		if self.rooms.has_key(room_seq):
 			return
-		self.rooms[room_seq]= Room(room_seq)
+		self.rooms[room_seq]= Room(room_seq, session= self.redis_conn)
 			
 	def validate_room(self, req_room):
 		prefix= "chat_room:"

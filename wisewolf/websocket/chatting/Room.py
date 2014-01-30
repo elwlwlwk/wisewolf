@@ -13,18 +13,20 @@ from pymongo import MongoClient
 
 class Room:
 	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None):
-		self.chat_seq= 0
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.chatters_name=[]
 		self.redis_conn= session
 		db= MongoClient().wisewolf
 		db.authenticate("wisewolf","dlalsrb3!")
-		room_collection= db.rooms
-		self.room_collection= room_collection
+		if room_collection is None:
+			self.room_collection= db.rooms
+		else:
+			self.room_collection= room_collection
 		self.prefix="chat_room:"
 		self.heartbeat_time= int(time())
 		self.heartbeat_key= urandom(12)
+		self.chat_seq= self.get_chat_seq()+1
 
 	def add_chatter(self, chatter):
 		self.chatters.append(chatter)
@@ -101,7 +103,7 @@ class Room:
 	def load_chat_redis(self):
 		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
 		loaded_messages=[]
-		if loaded_data != '':
+		if type(loaded_data) is str and loaded_data != '':
 			messages= json.loads(loaded_data)
 			for message in messages:
 				loaded_messages.append(message)
@@ -147,3 +149,18 @@ class Room:
 			self.room_collection.insert(room_data)
 		else:
 			self.room_collection.update({"room_seq":self.room_seq},{"$set":{"chat_log":room_document["chat_log"]+msg_to_mongo}})
+	
+	def get_chat_seq(self):
+		chat_log= self.load_chat_redis()
+		if len(chat_log) is 0:
+			return 0
+		else:
+			chat_log= sorted(chat_log, key=itemgetter("chat_seq"))
+			return chat_log[len(chat_log)-1]["chat_seq"]
+	
+	def load_chat_mongo(self, last_index, threshold=20):
+		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+		if room_document is None:
+			return []
+		else:
+			return room_document["chat_log"][last_index-threshold:last_index]
