@@ -121,6 +121,14 @@ class Room:
 			self.broadcast_chat(chatter, loaded_msg)
 		elif loaded_msg["proto_type"]== "heartbeat":
 			self.heartbeat_handler(chatter, loaded_msg)
+		elif loaded_msg["proto_type"]== "req_past_messages":
+			self.send_past_chats(chatter, loaded_msg["last_index"])
+	
+	def send_past_chats(self, chatter, last_index):
+		past_chats= self.load_chat_mongo(last_index)
+		for chat in past_chats:
+			self.unicast(chatter, chat)
+			
 
 	def extract_exceed_messages(self, messages, threshold= 20):
 		loaded_messages=[]

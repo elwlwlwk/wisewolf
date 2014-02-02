@@ -171,6 +171,38 @@ room_collection= self.room_collection)
 "chat_seq": 1}
 		self.room.message_handler(chatter, json.dumps(message))
 		self.assertEqual(chatter.message, json.dumps(dest_message))
+
+	def test_message_handler2(self):
+		chatter= self.mock_chatter()
+		self.room.add_chatter(chatter)
+		try:
+			messages=[]
+			for i in range(50):
+				message={"proto_type":"chat_message", "message":"test"+str(i), "chat_seq":i }
+				messages.append(message)
+			self.room.write_messages_redis(messages)
+			self.room.save_chat_mongo()
+			message={"proto_type":"req_past_messages", "last_index":30}
+			self.room.message_handler(chatter, json.dumps(message))
+			self.assertEqual(chatter.message, json.dumps(messages[29]))
+		finally:		
+			self.room_collection.drop()
+	
+	def test_send_past_chats(self):
+		chatter= self.mock_chatter()
+		self.room.add_chatter(chatter)
+		try:
+			messages=[]
+			for i in range(50):
+				message={"proto_type":"chat_message", "message":"test"+str(i), "chat_seq":i }
+				messages.append(message)
+			self.room.write_messages_redis(messages)
+			self.room.save_chat_mongo()
+			message={"proto_type":"req_past_messages", "last_index":30}
+			self.room.send_past_chats(chatter, 30)
+			self.assertEqual(chatter.message, json.dumps(messages[29]))
+		finally:		
+			self.room_collection.drop()
 	
 	def test_extract_exceed_messages(self):
 		messages=[]
