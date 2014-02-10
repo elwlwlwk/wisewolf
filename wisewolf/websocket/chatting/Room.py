@@ -12,17 +12,23 @@ from wisewolf.websocket.chatting import redis_RoomSession
 from pymongo import MongoClient
 
 class Room:
-	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None):
+	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None):
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.chatters_name=[]
 		self.redis_conn= session
 		db= MongoClient().wisewolf
 		db.authenticate("wisewolf","dlalsrb3!")
+
 		if room_collection is None:
 			self.room_collection= db.rooms
 		else:
 			self.room_collection= room_collection
+		if chat_log_collection is None:
+			self.chat_log_collection= db.chat_log
+		else:
+			self.chat_log_collection= chat_log_collection
+
 		self.prefix="chat_room:"
 		self.heartbeat_time= int(time())
 		self.heartbeat_key= urandom(12)
@@ -40,13 +46,13 @@ class Room:
 			heartbeat_msg={}
 			heartbeat_msg["proto_type"]= "heartbeat"
 			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
-			for chatter in self.chatters:
+			"""for chatter in self.chatters:
 				if chatter.alive== -2:
 					self.remove_chatter(chatter)
 					chatter.close()
 				else:
 					chatter.alive-= 1
-					self.write_message(chatter, heartbeat_msg)
+					self.write_message(chatter, heartbeat_msg)"""
 			self.heartbeat_time= cur_time
 
 	def heartbeat_handler(self, chatter, message):
@@ -153,11 +159,17 @@ class Room:
 		self.write_messages_redis(msg_to_redis, append= False)
 		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
 		if room_document is None:
-			room_data={"room_seq":self.room_seq,"chat_log":msg_to_mongo}
+			room_data={"room_seq":self.room_seq}
 			self.room_collection.insert(room_data)
+		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+		chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
+
+		if chat_log_document is None:
+			chat_data={"room_id":room_document["_id"], "chat_log":msg_to_mongo}
+			self.chat_log_collection.insert(chat_data)
 		else:
-			self.room_collection.update({"room_seq":self.room_seq},{"$set":{"chat_log":room_document["chat_log"]+msg_to_mongo}})
-	
+			self.chat_log_collection.update({"room_id":room_document["_id"]},{"$set":{"chat_log":chat_log_document["chat_log"]+msg_to_mongo}})
+			
 	def get_chat_seq(self):
 		chat_log= self.load_chat_redis()
 		if len(chat_log) is 0:
@@ -171,4 +183,8 @@ class Room:
 		if room_document is None:
 			return []
 		else:
-			return room_document["chat_log"][last_index-threshold:last_index]
+			mongo_room_id= room_document["_id"]
+			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id})
+			if last_index-threshold < 0:
+				return chat_log_document["chat_log"][0: last_index]
+			return chat_log_document["chat_log"][last_index-threshold:last_index]

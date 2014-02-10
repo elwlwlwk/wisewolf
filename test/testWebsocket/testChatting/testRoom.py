@@ -40,10 +40,11 @@ class TestRoom(unittest.TestCase):
 		db= client.test_wisewolf
 		db.authenticate("test_wisewolf","test_wisewolf")
 		self.room_collection= db.rooms
+		self.chat_log_collection= db.chat_log
 
 		self.redis_conn= self.mock_redisSession()
 		self.room= Room("test_room", session= self.redis_conn,\
-room_collection= self.room_collection)
+room_collection= self.room_collection, chat_log_collection= self.chat_log_collection)
 	
 	def test_add_chatter(self):
 		self.room.add_chatter(self.mock_chatter())
@@ -187,6 +188,7 @@ room_collection= self.room_collection)
 			self.assertEqual(chatter.message, json.dumps(messages[29]))
 		finally:		
 			self.room_collection.drop()
+			self.chat_log_collection.drop()
 	
 	def test_send_past_chats(self):
 		chatter= self.mock_chatter()
@@ -203,6 +205,7 @@ room_collection= self.room_collection)
 			self.assertEqual(chatter.message, json.dumps(messages[29]))
 		finally:		
 			self.room_collection.drop()
+			self.chat_log_collection.drop()
 	
 	def test_extract_exceed_messages(self):
 		messages=[]
@@ -249,8 +252,9 @@ room_collection= self.room_collection)
 			self.room.save_chat_mongo()
 			msg_to_mongo, msg_to_redis= self.room.extract_exceed_messages(messages)
 			self.assertEqual(self.redis_conn.value, json.dumps(msg_to_redis))
-			self.assertEqual(self.room_collection.find_one({'room_seq':self.room.room_seq})["chat_log"], msg_to_mongo)
-	
+			mongo_room_id= self.room_collection.find_one({'room_seq':self.room.room_seq})["_id"]
+			self.assertEqual(self.chat_log_collection.find_one({'room_id':mongo_room_id})["chat_log"], msg_to_mongo)
+			
 			messages2=[]
 			for i in range(50, 100):
 				message={"proto_type":"chat_message", "message":"test"+str(i), "chat_seq":i }
@@ -259,10 +263,11 @@ room_collection= self.room_collection)
 			self.room.save_chat_mongo()
 			msg_to_mongo, msg_to_redis= self.room.extract_exceed_messages(messages2)
 			self.assertEqual(self.redis_conn.value, json.dumps(msg_to_redis))
-			self.assertEqual(self.room_collection.find_one({'room_seq':'test_room'})["chat_log"], messages+msg_to_mongo)
-
+			self.assertEqual(self.chat_log_collection.find_one({'room_id':mongo_room_id})["chat_log"], messages+msg_to_mongo)
+			
 		finally:	
 			self.room_collection.drop()
+			self.chat_log_collection.drop()
 
 	def test_get_chat_seq(self):
 		self.assertEqual(self.room.get_chat_seq(), 0)
@@ -282,10 +287,9 @@ room_collection= self.room_collection)
 			self.room.write_messages_redis(messages)
 			self.room.save_chat_mongo()
 			msg_to_mongo, msg_to_redis= self.room.extract_exceed_messages(messages)
-			self.assertEqual(self.redis_conn.value, json.dumps(msg_to_redis))
-			self.assertEqual(self.room_collection.find_one({'room_seq':self.room.room_seq})["chat_log"], msg_to_mongo)
 
 			self.assertEqual(self.room.load_chat_mongo(30,threshold=20), messages[10:30])
 	
 		finally:	
 			self.room_collection.drop()
+			self.chat_log_collection.drop()

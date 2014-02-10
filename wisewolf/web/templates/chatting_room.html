@@ -1,6 +1,7 @@
 {% extends "index_layout.html" %}
 
 {% block head %}
+<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.2/dojo/dojo.js" data-dojo-config="async: true"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/chat_app.js') }}"></script>
 {% endblock %}
 
@@ -12,12 +13,10 @@
 <div class="" id="chatters" style="height:300px;width:15%; float:right">
 </div>
 <div class="col-md-12">
-<textarea class="form-control chat_to_send" id="chat_to_send" rows="3" onkeypress="return handleKeyPress(event)" style="float:left; width:85%">
+<textarea class="form-control chat_to_send" id="chat_to_send" rows="3" style="float:left; width:85%">
 </textarea>
-<button class="btn btn-primary" style="width:15%; height:90px;" onclick="sendChatMessage()" >Send</button>
+<button class="btn btn-primary" style="width:15%; height:90px;" id="send_button">Send</button>
 </div>
-
-
 </div>
 </div>
 {% endblock %}
