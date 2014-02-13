@@ -74,7 +74,7 @@ define([
 		var message={};
 		message["proto_type"]= "heartbeat";
 		message["heartbeat_key"]=myData["heartbeat_key"];
-		//send_msg_server(message);
+		send_msg_server(message);
 	}
 	
 	
