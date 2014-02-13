@@ -16,10 +16,9 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		req_room= self.request.uri.split("/")[3]
 		if chatting_room_session.validate_room(req_room):
 			chatting_room_session.add_room(req_room)
-			chatting_room_session.rooms[req_room].add_chatter(self)
-			self.my_room.broadcast_room_stat()
-			self.my_room.send_cur_chat_log(self)
 
+			chatting_room_session.rooms[req_room].add_waiting_chatter(self)
+			
 		else:
 			print "invalid access"
 			self.close()

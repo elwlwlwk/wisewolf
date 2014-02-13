@@ -16,6 +16,7 @@ class Room:
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.chatters_name=[]
+		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
 		db= MongoClient().wisewolf
 		db.authenticate("wisewolf","dlalsrb3!")
@@ -34,10 +35,16 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
+	def add_waiting_chatter(self, chatter):
+		chatter.set_my_room(self)
+		self.waiting_chatters.append(chatter)
+
 	def add_chatter(self, chatter):
 		self.chatters.append(chatter)
 		self.chatters_name.append(chatter.get_name())
-		chatter.set_my_room(self)
+		self.broadcast_room_stat()
+		self.send_cur_chat_log(chatter)
+
 
 	def send_heartbeat(self):
 		cur_time= int(time())
@@ -46,13 +53,13 @@ class Room:
 			heartbeat_msg={}
 			heartbeat_msg["proto_type"]= "heartbeat"
 			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
-			"""for chatter in self.chatters:
+			for chatter in self.chatters:
 				if chatter.alive== -2:
 					self.remove_chatter(chatter)
 					chatter.close()
 				else:
 					chatter.alive-= 1
-					self.write_message(chatter, heartbeat_msg)"""
+					self.write_message(chatter, heartbeat_msg)
 			self.heartbeat_time= cur_time
 
 	def heartbeat_handler(self, chatter, message):
@@ -62,6 +69,7 @@ class Room:
 	def write_message(self, chatter, message):
 		if message["proto_type"]!= "heartbeat":
 			self.send_heartbeat()
+		print message["proto_type"]+"] "+chatter.name+" life: "+str(chatter.alive)
 		if type(chatter.ws_connection) is not NoneType:
 			if message["proto_type"]== "chat_message":
 				if message["chat_seq"] != 0 and message["chat_seq"] % 40 is 0:
@@ -129,10 +137,20 @@ class Room:
 			self.heartbeat_handler(chatter, loaded_msg)
 		elif loaded_msg["proto_type"]== "req_past_messages":
 			self.send_past_chats(chatter, loaded_msg["last_index"])
+		elif loaded_msg["proto_type"]=="first_handshake":			
+			self.handle_first_handshake(chatter)
+	
+	def handle_first_handshake(self, chatter):
+		if chatter in self.waiting_chatters:
+			self.waiting_chatters.remove(chatter)
+			self.add_chatter(chatter)
+		else:
+			return
 	
 	def send_past_chats(self, chatter, last_index):
 		past_chats= self.load_chat_mongo(last_index)
 		for chat in past_chats:
+			chat["past_chat"]="true";
 			self.unicast(chatter, chat)
 			
 
@@ -186,5 +204,5 @@ class Room:
 			mongo_room_id= room_document["_id"]
 			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id})
 			if last_index-threshold < 0:
-				return chat_log_document["chat_log"][0: last_index]
-			return chat_log_document["chat_log"][last_index-threshold:last_index]
+				return chat_log_document["chat_log"][0: last_index-1]
+			return chat_log_document["chat_log"][last_index-threshold:last_index-1]

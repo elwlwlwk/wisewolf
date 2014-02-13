@@ -1,7 +1,16 @@
 {% extends "index_layout.html" %}
 
 {% block head %}
-<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.2/dojo/dojo.js" data-dojo-config="async: true"></script>
+<script>
+	var dojoConfig={
+		async: true,
+		packages: [{
+			name: "kb",
+			location: "/static/js/kb"
+		}]
+	};
+</script>
+<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.2/dojo/dojo.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/chat_app.js') }}"></script>
 {% endblock %}
 
