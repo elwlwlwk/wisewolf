@@ -69,11 +69,8 @@ class Room:
 	def write_message(self, chatter, message):
 		if message["proto_type"]!= "heartbeat":
 			self.send_heartbeat()
-		print message["proto_type"]+"] "+chatter.name+" life: "+str(chatter.alive)
+		#print message["proto_type"]+"] "+chatter.name+" life: "+str(chatter.alive)
 		if type(chatter.ws_connection) is not NoneType:
-			if message["proto_type"]== "chat_message":
-				if message["chat_seq"] != 0 and message["chat_seq"] % 40 is 0:
-					self.save_chat_mongo()
 			chatter.write_message(json.dumps(message))
 
 	def broadcast(self, message):
@@ -98,13 +95,9 @@ class Room:
 		self.chat_seq+= 1
 		return chat_message
 
-	def write_chat_redis(self, chat_message):
-		chat_log=[chat_message]
-		self.write_messages_redis(chat_log)
-
 	def broadcast_chat(self, chatter, message):
 		chat_message= self.assemble_chat(chatter, message)
-		self.write_chat_redis(chat_message)
+		self.save_chat_mongo(chat_message)
 		self.broadcast(chat_message)
 		
 	def broadcast_room_stat(self):
@@ -114,17 +107,8 @@ class Room:
 		room_stat["chatters"]= self.chatters_name
 		self.broadcast(room_stat)
 	
-	def load_chat_redis(self):
-		loaded_data= self.redis_conn.get(self.prefix+ self.room_seq)
-		loaded_messages=[]
-		if type(loaded_data) is str and loaded_data != '':
-			messages= json.loads(loaded_data)
-			for message in messages:
-				loaded_messages.append(message)
-		return loaded_messages
-
 	def send_cur_chat_log(self, chatter):
-		chat_log= self.load_chat_redis()
+		chat_log= self.load_chat_mongo(last_chat= True)
 		if chat_log!= '':
 			for chat in chat_log:
 				self.unicast(chatter, chat)
@@ -165,44 +149,42 @@ class Room:
 		else:
 			return [],loaded_messages
 	
-	def write_messages_redis(self, messages, append= True):
+	def save_chat_mongo(self, message, append= True):
 		if append is True:
-			chat_log= self.load_chat_redis()+ messages
+			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+			if room_document is None:
+				room_data={"room_seq":self.room_seq}
+				self.room_collection.insert(room_data)
+			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
+			if type(chat_log_document) is NoneType:
+				chat_data={"room_id":room_document["_id"], "chat_log":[message]}
+				self.chat_log_collection.insert(chat_data)
+			else:
+				chat_log_document["chat_log"].append(message)
+				self.chat_log_collection.update({"room_id":room_document["_id"]},{"$set":{"chat_log":chat_log_document["chat_log"]}})
+	
 		else:
-			chat_log= messages
-		self.redis_conn.set(self.prefix+ self.room_seq, json.dumps(chat_log))
-
-	def save_chat_mongo(self, threshold= 20):
-		msg_to_mongo, msg_to_redis= self.extract_exceed_messages(self.load_chat_redis(), threshold= threshold)
-		self.write_messages_redis(msg_to_redis, append= False)
-		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-		if room_document is None:
-			room_data={"room_seq":self.room_seq}
-			self.room_collection.insert(room_data)
-		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-		chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
-
-		if chat_log_document is None:
-			chat_data={"room_id":room_document["_id"], "chat_log":msg_to_mongo}
-			self.chat_log_collection.insert(chat_data)
-		else:
-			self.chat_log_collection.update({"room_id":room_document["_id"]},{"$set":{"chat_log":chat_log_document["chat_log"]+msg_to_mongo}})
-			
+			pass
+	
 	def get_chat_seq(self):
-		chat_log= self.load_chat_redis()
+		chat_log= self.load_chat_mongo(last_chat= True)
 		if len(chat_log) is 0:
 			return 0
 		else:
 			chat_log= sorted(chat_log, key=itemgetter("chat_seq"))
 			return chat_log[len(chat_log)-1]["chat_seq"]
 	
-	def load_chat_mongo(self, last_index, threshold=20):
+	def load_chat_mongo(self, last_index=0, threshold=20, last_chat= False):
 		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
 		if room_document is None:
 			return []
 		else:
 			mongo_room_id= room_document["_id"]
 			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id})
-			if last_index-threshold < 0:
-				return chat_log_document["chat_log"][0: last_index-1]
-			return chat_log_document["chat_log"][last_index-threshold:last_index-1]
+			if last_chat is True:
+				return chat_log_document["chat_log"][-20:]
+			else:
+				if last_index-threshold < 0:
+					return chat_log_document["chat_log"][0: last_index-1]
+				return chat_log_document["chat_log"][last_index-threshold:last_index-1]
