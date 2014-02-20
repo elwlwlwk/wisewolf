@@ -7,6 +7,9 @@ from redis_session import RedisSessionInterface
 from wisewolf.web import app
 from wisewolf.websocket.chatting import redis_RoomSession
 
+from pymongo import MongoClient
+import json
+from flask import Markup
 
 config_loc='DEV'
 
@@ -30,6 +33,8 @@ def before_request():
 password='dlalsrb3!',\
 host='165.194.104.192')
 	g.db= con.cursor()
+	g.mongo= MongoClient().wisewolf
+	g.mongo.authenticate("wisewolf","dlalsrb3!")
 
 # disconnect database
 @app.teardown_request
@@ -122,5 +127,51 @@ def gen_thumb():
 		except IOError, e:
 			print e	
 
+@app.route("/test")
+def hen():
+	return render_template("test.html")
+
+@app.route('/vote', methods=['POST'])
+def vote():
+	if session.has_key('user')!= True:
+		try:
+			return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+		except TypeError, e:
+			return ''
+
+	dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
+	room= g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})
+	def vote_tag(pros_cons):
+		updated= False
+		room_tags= room['tags']
+		for tag in room_tags:
+			if tag['tag']== dest_tag:
+				if pros_cons== "up":
+					tag['up']+=1
+				else:
+					tag['down']+=1
+				updated= True
+				break;
+		if updated== False:
+			room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
+		g.mongo.rooms.update({"room_seq":request.form['tag_room']},{"$set":{"tags":room_tags}})
+
+		pass
+	prefix= "chat_room:"
+	if request.form['tag_type']== 'new':
+		if room is None:
+			return ''
+		else:# if exist room
+			if len(dest_tag) is not 0:
+				if room.has_key('tags'):# if room already has tag, vote up the tag
+					vote_tag("up")
+				else:
+					g.mongo.rooms.update({"room_seq":request.form['tag_room']},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
+			return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+	elif request.form['tag_type']== 'vote':
+		vote_tag(request.form['pros_cons'])
+		return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+
+	
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=6974)

@@ -1,6 +1,7 @@
 import json
 import binascii
 
+import pickle
 from time import time
 from os import urandom
 from flask import Markup
@@ -8,6 +9,7 @@ from types import *
 from operator import itemgetter
 
 from wisewolf.websocket.chatting import redis_RoomSession
+from redis import Redis
 
 from pymongo import MongoClient
 
@@ -122,11 +124,16 @@ class Room:
 		elif loaded_msg["proto_type"]== "req_past_messages":
 			self.send_past_chats(chatter, loaded_msg["last_index"])
 		elif loaded_msg["proto_type"]=="first_handshake":			
-			self.handle_first_handshake(chatter)
+			self.handle_first_handshake(chatter, loaded_msg["user_id"])
 	
-	def handle_first_handshake(self, chatter):
+	def handle_first_handshake(self, chatter, user_id):
 		if chatter in self.waiting_chatters:
 			self.waiting_chatters.remove(chatter)
+			redis= Redis()
+			val = redis.get("session:"+ user_id)
+			if val is not None:
+				val = pickle.loads(val)
+				chatter.name= val['user']
 			self.add_chatter(chatter)
 		else:
 			return

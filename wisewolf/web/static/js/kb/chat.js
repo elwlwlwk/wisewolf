@@ -10,7 +10,7 @@ define([
 		ws.send(JSON.stringify(message));
 	}
 	function openHandler(e){
-		message={"proto_type":"first_handshake"};
+		message={"proto_type":"first_handshake", "user_id":dom.byId("user_id").value};
 		send_msg_server(message);
 	}
 	function messageHandler(e){

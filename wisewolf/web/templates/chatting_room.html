@@ -15,17 +15,19 @@
 {% endblock %}
 
 {% block body %}
-<div>
-<div class="wrapper col-md-12" >
-<div class="chat_log" id="chat_log" style="height: 300px; overflow-y:scroll; float:left; width:85%">
+
+<input type="hidden" name="user_id" id="user_id" value="{{ request.cookies.get("session") }}" />
+<div class="container">
+  <div class="wrapper col-md-12" >
+    <div class="" id="chatters" tabindex="0" style="height:300px;width:15%; float:right">
+    </div>
+    <div class="chat_log" id="chat_log" class="col-md-10"style="height: 300px; overflow-y:scroll;width:85%">
+    </div>
+    <div class="col-md-12">
+      <textarea class="form-control chat_to_send" id="chat_to_send" rows="3" style="float:left; width:85%"></textarea>
+      <button class="btn btn-primary" style="width:15%; height:90px;" id="send_button">Send</button>
+    </div>
+  </div>
 </div>
-<div class="" id="chatters" style="height:300px;width:15%; float:right">
-</div>
-<div class="col-md-12">
-<textarea class="form-control chat_to_send" id="chat_to_send" rows="3" style="float:left; width:85%">
-</textarea>
-<button class="btn btn-primary" style="width:15%; height:90px;" id="send_button">Send</button>
-</div>
-</div>
-</div>
+{% include "vote_tag.html" %}
 {% endblock %}

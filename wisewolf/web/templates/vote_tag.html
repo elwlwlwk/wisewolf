@@ -1,0 +1,120 @@
+{% block tag_vote %}
+<script>
+var tags;
+require([
+	'dojo/dom',
+	'dojo/on',
+	'dojo/_base/connect',
+	'dojo/_base/event',
+	'dojo/_base/xhr',
+	'dojo/domReady!'
+], function(dom, on, connect, event, xhr){
+	connect.connect(dom.byId("form_new_tag"), "onsubmit", function(e){
+		event.stop(e);
+		update_tags("form_new_tag");
+		dom.byId("text_new_tag").value="";
+	})
+	var tag_rooms= document.getElementsByName("tag_room");
+	for(tag_room in tag_rooms){
+		tag_rooms[tag_room].value=document.URL.split('/')[4];
+	}
+
+	function update_tags(formId){
+		var xhrArgs={
+			form: dom.byId(formId),
+			handleAs: "text",
+			load: display_tags
+		}
+		xhr.post(xhrArgs);
+	}
+	on(dom.byId("button_vote_up"), "click", function(e){
+		vote_tag("up");	
+	})
+	on(dom.byId("button_vote_down"),"click", function(e){
+		vote_tag("down");	
+	})
+
+	function vote_tag(up_down){
+		dom.byId("pros_cons").value= up_down;
+		update_tags("div_vote_tags");
+		dom.byId("pros_cons").value="";
+		dom.byId("tag_button_"+dom.byId("tag_to_vote").value).classList.remove("active");
+		dom.byId("tag_to_vote").value=""
+		dom.byId("button_vote_up").disabled= true;
+		dom.byId("button_vote_down").disabled= true;
+	}
+
+	function display_tags(data){
+		tags= JSON.parse(data);
+		dom.byId("span_tags").innerHTML='';
+		sorted_tags=[]
+		for(var key in tags){
+			sorted_tags.push([tags[key]['up'],tags[key]['tag']]);
+		}
+		sorted_tags.sort(function(m, n){return m[0]-n[0]});
+		for(var i= sorted_tags.length-1; i>=0; i--){
+			var tag= document.createElement("button");
+			var text= document.createTextNode(" ");
+			tag.setAttribute("id", "tag_button_"+sorted_tags[i][1]);
+			tag.setAttribute("class", "btn btn-default btn-xs");
+			tag.setAttribute("type", "button");
+			tag.setAttribute("name", "tag");
+			tag.innerHTML= sorted_tags[i][1]+":"+sorted_tags[i][0];
+			dom.byId("span_tags").appendChild(tag);
+			dom.byId("span_tags").appendChild(text);
+			on(tag, "click",function(){
+				voting_tag= dom.byId("tag_to_vote").value;
+				if(voting_tag == this.id.slice(11, this.id.length)){
+					dom.byId("tag_to_vote").value= "";
+					dom.byId("button_vote_up").disabled= true;
+					dom.byId("button_vote_down").disabled= true;
+					this.classList.remove("active");
+				}else{
+					if(dom.byId("tag_to_vote").value!= ""){
+						dom.byId("tag_button_"+dom.byId("tag_to_vote").value).classList.remove("active");
+					}
+					dom.byId("tag_to_vote").value= this.id.slice(11, this.id.length);
+					dom.byId("button_vote_up").disabled= false;
+					dom.byId("button_vote_down").disabled= false;
+					this.classList.add("active");
+				}
+			});
+		}
+	}
+
+	update_tags("form_new_tag");
+});
+</script>
+<form method="post" action="/vote" id="div_vote_tags" class="navbar-form">
+  <input type="hidden" name="tag_room" value= />
+  <input type="hidden" name="tag_type" value="vote" />
+  <input type="hidden" id="tag_to_vote" name="dest_tag" value="" />
+  <input type="hidden" id="pros_cons" name="pros_cons" value="" />
+  <table class="table" style="margin-bottom: 0px">
+    <tr>
+      <td id="td_tags">
+          <span>tags:</span><span id="span_tags"></span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+          <button type="button" class="btn btn-primary" disabled="disabled" id="button_vote_up">vote up</button>
+          <button type="button" class="btn btn-warning" disabled="disabled" id="button_vote_down">vote down</button>
+      </td>
+    </tr>
+  </table>
+</form>
+<form method="post" action="/vote" class="navbar-form" id="form_new_tag">
+  <input type="hidden" name="tag_type" value="new" />
+  <input type="hidden" name="tag_room" value= />
+  <div id="div_text_new_tag" class="form-group">
+    <input type="text" class="form-control" placeholder="new tag" name="dest_tag" id="text_new_tag" />
+  </div>
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary" id="button_new_tag">add tag</button>
+  </div>
+</form>
+<form method="post" action="/vote" id="form_get_tag">
+  <input type="hidden" name="tag_type" value="get" />
+</form>
+{% endblock %}

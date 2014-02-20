@@ -11,20 +11,20 @@
 	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
     {% block head %}{% endblock %}
   </head>
-  <body>
+  <body role="document">
     <div class="navbar navbar-inverse navbar-fixed-top">
-	<div class="navbar-header">
+	  <div class="container">
+        <div class="navbar-header">
 
-    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-    <span class="sr-only">Toggle navigation</span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    </button>
-    <a class="navbar-brand" href="/">Wisewolf</a>
-    </div>
-        <div class="container">
-		  <div class="collapse navbar-collapse">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Wisewolf</a>
+        </div>
+	    <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li><a href="{{ url_for('index') }}">Home</a></li>
             <li><a href="/profile">Profile</a></li>
@@ -42,13 +42,13 @@
 			    <b class="caret"></b>
 			  </a>
                 <ul class="dropdown-menu">
-                <li><a>Stat</a></li>
+                  <li><a>Stat</a></li>
                 </ul>
 			</li>
             <li><a href="{{ url_for('signout') }}">Signout</a></li>
 {% endif %}
           </ul>
-		  </div>
+		</div>
       </div>
     </div>
 <!--
@@ -58,21 +58,12 @@
       </div>
     </a>
 -->
-    <div class="continer">
-	  <div id="sidebar" class="col-md-2">
-        <div class="nav nav-list affix-top collapse navbar-collapse">
-          <h2 class="right_nav">Navi</h2>
-          <li><a href="/">Home</a></li>
-          <li><a href="/profile">Profile</a></li>
-          <li><a href="/gallery">Gallery</a></li>
-		  <li><a href="/chatting/new">Chatting</a></li>
+    <div class="container" role="main" style="margin-top:50px">
+	  <div class= "col-md-12">
+        <div class="content">
+          {% block body %}{% endblock %}
         </div>
-	  </div>
-        <div class= "col-md-10">
-          <div class="content">
-            {% block body %}{% endblock %}
-          </div>
-        </div>
+      </div>
     </div>
 	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
   </body>
