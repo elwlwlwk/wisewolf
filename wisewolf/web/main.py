@@ -131,6 +131,10 @@ def gen_thumb():
 def hen():
 	return render_template("test.html")
 
+@app.route("/base/<path:path>")
+def base(path):
+	return render_template(path)
+
 @app.route('/vote', methods=['POST'])
 def vote():
 	if session.has_key('user')!= True:
@@ -139,10 +143,11 @@ def vote():
 		except TypeError, e:
 			return ''
 
-	dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
 	room= g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})
-	def vote_tag(pros_cons):
-		updated= False
+	def vote_tag(pros_cons, new_tag= True):
+		updated= True
+		if new_tag== True:
+			updated= False
 		room_tags= room['tags']
 		for tag in room_tags:
 			if tag['tag']== dest_tag:
@@ -159,6 +164,7 @@ def vote():
 		pass
 	prefix= "chat_room:"
 	if request.form['tag_type']== 'new':
+		dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
 		if room is None:
 			return ''
 		else:# if exist room
@@ -169,7 +175,8 @@ def vote():
 					g.mongo.rooms.update({"room_seq":request.form['tag_room']},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
 			return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
 	elif request.form['tag_type']== 'vote':
-		vote_tag(request.form['pros_cons'])
+		dest_tag= request.form['dest_tag'].replace(" ","").strip()
+		vote_tag(request.form['pros_cons'], new_tag= False)
 		return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
 
 	

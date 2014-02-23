@@ -1,6 +1,7 @@
 venv
 *.pyc
 *.swp
+*.base
 imgs
 wisewolf/web/static/js/dojo
 wisewolf/web/static/js/dijit

@@ -45,11 +45,15 @@ require([
 	}
 
 	function display_tags(data){
+{% if not session.signed_in %}
+			dom.byId("text_new_tag").disabled= true;
+			dom.byId("button_new_tag").disabled= true;
+{% endif %}
 		tags= JSON.parse(data);
 		dom.byId("span_tags").innerHTML='';
 		sorted_tags=[]
 		for(var key in tags){
-			sorted_tags.push([tags[key]['up'],tags[key]['tag']]);
+			sorted_tags.push([tags[key]['up'], tags[key]['tag'], tags[key]['down']]);
 		}
 		sorted_tags.sort(function(m, n){return m[0]-n[0]});
 		for(var i= sorted_tags.length-1; i>=0; i--){
@@ -59,7 +63,10 @@ require([
 			tag.setAttribute("class", "btn btn-default btn-xs");
 			tag.setAttribute("type", "button");
 			tag.setAttribute("name", "tag");
-			tag.innerHTML= sorted_tags[i][1]+":"+sorted_tags[i][0];
+{% if not session.signed_in %}
+			tag.disabled= true;
+{% endif %}
+			tag.innerHTML= sorted_tags[i][1]+":["+sorted_tags[i][0]+","+sorted_tags[i][2]+"]";
 			dom.byId("span_tags").appendChild(tag);
 			dom.byId("span_tags").appendChild(text);
 			on(tag, "click",function(){
