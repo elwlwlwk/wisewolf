@@ -9,9 +9,13 @@ from types import *
 from operator import itemgetter
 
 from wisewolf.websocket.chatting import redis_RoomSession
+from wisewolf.web import redis_UserSession
+from wisewolf.config import MONGO_AUTHENTICATE
 from redis import Redis
 
 from pymongo import MongoClient
+
+from wisewolf.websocket import Mongo_Wisewolf
 
 class Room:
 	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None):
@@ -20,8 +24,7 @@ class Room:
 		self.chatters_name=[]
 		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
-		db= MongoClient().wisewolf
-		db.authenticate("wisewolf","dlalsrb3!")
+		db=Mongo_Wisewolf
 
 		if room_collection is None:
 			self.room_collection= db.rooms
@@ -126,10 +129,10 @@ class Room:
 		elif loaded_msg["proto_type"]=="first_handshake":			
 			self.handle_first_handshake(chatter, loaded_msg["user_id"])
 	
-	def handle_first_handshake(self, chatter, user_id):
+	def handle_first_handshake(self, chatter, user_id=""):
 		if chatter in self.waiting_chatters:
 			self.waiting_chatters.remove(chatter)
-			redis= Redis()
+			redis= redis_UserSession
 			val = redis.get("session:"+ user_id)
 			if val is not None:
 				val = pickle.loads(val)

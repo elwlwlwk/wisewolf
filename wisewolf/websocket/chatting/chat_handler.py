@@ -14,7 +14,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		pass
 	def open(self):
 		req_room= self.request.uri.split("/")[3]
-		if chatting_room_session.validate_room(req_room):
+		if chatting_room_session.validate_room(req_room, "chat_room:"):
 			chatting_room_session.add_room(req_room)
 
 			chatting_room_session.rooms[req_room].add_waiting_chatter(self)

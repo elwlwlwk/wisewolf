@@ -4,4 +4,4 @@ from wisewolf.config import REDIS_INDEX
 
 app= Flask(__name__)
 
-redis_UserSession= Redis(REDIS_INDEX['user_sessions'])
+redis_UserSession= Redis(db=REDIS_INDEX['user_sessions'])

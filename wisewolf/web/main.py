@@ -6,6 +6,7 @@ import psycopg2
 from redis_session import RedisSessionInterface
 from wisewolf.web import app
 from wisewolf.websocket.chatting import redis_RoomSession
+from wisewolf.websocket import Mongo_Wisewolf
 
 from pymongo import MongoClient
 import json
@@ -33,8 +34,7 @@ def before_request():
 password='dlalsrb3!',\
 host='165.194.104.192')
 	g.db= con.cursor()
-	g.mongo= MongoClient().wisewolf
-	g.mongo.authenticate("wisewolf","dlalsrb3!")
+	g.mongo= Mongo_Wisewolf
 
 # disconnect database
 @app.teardown_request
@@ -66,6 +66,24 @@ make_url_mapping()
 
 from datetime import timedelta
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
+
+@app.route('/One2One/<path:path>')
+def One2OneRoom(path):
+#	print "path: "+path
+	if path =='new':
+		import os
+		import binascii
+		import time
+		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
+		return redirect("/One2One/"+room_id)
+	prefix= "One2One:"
+	r= redis_RoomSession
+	val= r.get(prefix+path)
+	if val is not None:
+		enter_existing_room()
+	else:
+		create_new_room(r, prefix, path)
+	return render_template("One2One.html")
 
 @app.route('/chatting/<path:path>')
 def chattingroom(path):

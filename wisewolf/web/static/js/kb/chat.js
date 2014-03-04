@@ -1,7 +1,8 @@
 define([
 	"dojo/dom",
+	"dojo/_base/window",
 	"dojox/socket"
-], function(dom){
+], function(dom, window){
 
 	var ws;
 	var last_chat;
@@ -77,6 +78,9 @@ define([
 		send_msg_server(message);
 	}
 	
+	function auto_h_resize(){
+	}
+	
 	
 	return{
 		connect_server: function(host){
@@ -89,6 +93,9 @@ define([
 		},
 		scroll_lock: function(chat){
 			last_chat= chat;
+		},
+		auto_height_resize: function(){
+			auto_h_resize();
 		}
 	};
 });

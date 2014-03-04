@@ -7,6 +7,7 @@ require([
 		URL_split= document.URL.split("/");
 		chat_room_seq= URL_split[URL_split.indexOf("chatting")+1];//get element which next of 'chat'
 		chat.connect_server("ws://165.194.104.192:8000/ws/chat/"+chat_room_seq);
+		chat.auto_height_resize();
 		sendChatMessage= function(){
 			var chat_to_send= dom.byId("chat_to_send");
 			var message={};
@@ -39,3 +40,4 @@ require([
 		})
 	}
 )
+var test;

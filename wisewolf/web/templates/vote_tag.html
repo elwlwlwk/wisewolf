@@ -92,36 +92,38 @@ require([
 	update_tags("form_new_tag");
 });
 </script>
-<form method="post" action="/vote" id="div_vote_tags" class="navbar-form">
-  <input type="hidden" name="tag_room" value= />
-  <input type="hidden" name="tag_type" value="vote" />
-  <input type="hidden" id="tag_to_vote" name="dest_tag" value="" />
-  <input type="hidden" id="pros_cons" name="pros_cons" value="" />
-  <table class="table" style="margin-bottom: 0px">
-    <tr>
-      <td id="td_tags">
-          <span>tags:</span><span id="span_tags"></span>
-      </td>
-    </tr>
-    <tr>
-      <td>
-          <button type="button" class="btn btn-primary" disabled="disabled" id="button_vote_up">vote up</button>
-          <button type="button" class="btn btn-warning" disabled="disabled" id="button_vote_down">vote down</button>
-      </td>
-    </tr>
-  </table>
-</form>
-<form method="post" action="/vote" class="navbar-form" id="form_new_tag">
-  <input type="hidden" name="tag_type" value="new" />
-  <input type="hidden" name="tag_room" value= />
-  <div id="div_text_new_tag" class="form-group">
-    <input type="text" class="form-control" placeholder="new tag" name="dest_tag" id="text_new_tag" />
-  </div>
-  <div class="form-group">
-    <button type="submit" class="btn btn-primary" id="button_new_tag">add tag</button>
-  </div>
-</form>
-<form method="post" action="/vote" id="form_get_tag">
-  <input type="hidden" name="tag_type" value="get" />
-</form>
+<div id="div_vote">
+  <form method="post" action="/vote" id="div_vote_tags" class="navbar-form">
+    <input type="hidden" name="tag_room" value= />
+    <input type="hidden" name="tag_type" value="vote" />
+    <input type="hidden" id="tag_to_vote" name="dest_tag" value="" />
+    <input type="hidden" id="pros_cons" name="pros_cons" value="" />
+    <table class="table" style="margin-bottom: 0px">
+      <tr>
+        <td id="td_tags">
+            <span>tags:</span><span id="span_tags"></span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <button type="button" class="btn btn-primary" disabled="disabled" id="button_vote_up">vote up</button>
+            <button type="button" class="btn btn-warning" disabled="disabled" id="button_vote_down">vote down</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <form method="post" action="/vote" class="navbar-form" id="form_new_tag">
+    <input type="hidden" name="tag_type" value="new" />
+    <input type="hidden" name="tag_room" value= />
+    <div id="div_text_new_tag" class="form-group">
+      <input type="text" class="form-control" placeholder="new tag" name="dest_tag" id="text_new_tag" />
+    </div>
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" id="button_new_tag">add tag</button>
+    </div>
+  </form>
+  <form method="post" action="/vote" id="form_get_tag">
+    <input type="hidden" name="tag_type" value="get" />
+  </form>
+</div>
 {% endblock %}
