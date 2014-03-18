@@ -153,6 +153,24 @@ def hen():
 def base(path):
 	return render_template(path)
 
+@app.route("/files")
+def files():
+	from flask import flash
+	gen_thumb()
+	file_list= os.listdir('./wisewolf/web/file')
+	file_list.sort()
+	for myfile in file_list:
+		flash(myfile)
+	return render_template("files.html") 
+
+@app.route("/file/<path:path>")
+def file(path):
+	gen_thumb()
+	fullpath = "./wisewolf/web/file/" + path
+	resp = make_response(open(fullpath).read())
+	resp.content_type = "application/octet-stream"
+	return resp
+
 @app.route('/vote', methods=['POST'])
 def vote():
 	if session.has_key('user')!= True:

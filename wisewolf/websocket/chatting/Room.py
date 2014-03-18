@@ -142,7 +142,9 @@ class Room:
 			return
 	
 	def send_past_chats(self, chatter, last_index):
+		print "test"
 		past_chats= self.load_chat_mongo(last_index)
+		print len(past_chats)
 		for chat in past_chats:
 			chat["past_chat"]="true";
 			self.unicast(chatter, chat)
@@ -195,6 +197,11 @@ class Room:
 			if last_chat is True:
 				return chat_log_document["chat_log"][-20:]
 			else:
+				print "not last chat"
+				print last_index-threshold
 				if last_index-threshold < 0:
 					return chat_log_document["chat_log"][0: last_index-1]
+				print last_index-threshold
+				print last_index-1
+				print len(chat_log_document["chat_log"])
 				return chat_log_document["chat_log"][last_index-threshold:last_index-1]

@@ -1,0 +1,14 @@
+{% extends "index_layout.html" %}
+{% block body %}
+<div>
+<div class="gal_div">
+{% for myfile in get_flashed_messages() %}
+<a href="/file/{{ myfile }}">
+  <div class="">
+    {{ myfile }}
+  </div>
+</a>
+{% endfor %}
+</div>
+</div>
+{% endblock %}

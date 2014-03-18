@@ -1,8 +1,9 @@
 define([
 	"dojo/dom",
 	"dojo/_base/window",
+	"dojo/on",
 	"dojox/socket"
-], function(dom, window){
+], function(dom, window, on){
 
 	var ws;
 	var last_chat;
@@ -79,9 +80,27 @@ define([
 	}
 	
 	function auto_h_resize(){
+		var body= dom.byId("body")
+		if(body.clientWidth){}
+		dom.byId("body_content").style.height=body.clientHeight-58+"px";
+		dom.byId("chat_wrapper").style.height=body.clientHeight-198+"px";
+		dom.byId("chat_log").style.height=body.clientHeight-290+"px";
+		dom.byId("chatters").style.height=body.clientHeight-290+"px";
+		dom.byId("chat_log").scrollTop= chat_log.scrollHeight;
 	}
-	
-	
+
+	function req_past_message(){
+		if(dom.byId("chat_log").scrollTop==0){
+			message={};
+			message["proto_type"]="req_past_messages";
+			message["last_index"]=Number(dom.byId("chat_log").childNodes[1].id.split("_")[1]);
+			if(message["last_index"]>1){
+				last_chat=dom.byId("chat_log").childNodes[1];
+				send_msg_server(message);
+			}
+		}
+	}
+
 	return{
 		connect_server: function(host){
 			ws= dojox.socket(host);
@@ -96,6 +115,9 @@ define([
 		},
 		auto_height_resize: function(){
 			auto_h_resize();
+		},
+		req_past_message: function(){
+			req_past_message()
 		}
 	};
 });

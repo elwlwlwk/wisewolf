@@ -11,7 +11,7 @@
 	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
     {% block head %}{% endblock %}
   </head>
-  <body role="document">
+  <body id="body" role="documnet">
     <div class="navbar navbar-inverse navbar-fixed-top">
 	  <div class="container">
         <div class="navbar-header">
@@ -58,9 +58,9 @@
       </div>
     </a>
 -->
-    <div class="" role="main" style="margin-top:50px">
-	  <div class= "col-md-12">
-        <div class="content">
+    <div class="max_height" role="main">
+	  <div class= "col-md-12 max_height">
+        <div id="body_content">
           {% block body %}{% endblock %}
         </div>
       </div>
