@@ -13,7 +13,9 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		tornado.websocket.WebSocketHandler.__init__(self, request, spec_kwargs)
 		pass
 	def open(self):
+		print "new connections!"
 		req_room= self.request.uri.split("/")[3]
+		print self.request.uri
 		if chatting_room_session.validate_room(req_room, "chat_room:"):
 			chatting_room_session.add_room(req_room)
 

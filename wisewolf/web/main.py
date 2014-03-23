@@ -67,7 +67,7 @@ make_url_mapping()
 from datetime import timedelta
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
 
-@app.route('/One2One/<path:path>')
+@app.route('/versuschat/<path:path>')
 def One2OneRoom(path):
 #	print "path: "+path
 	if path =='new':
@@ -75,15 +75,15 @@ def One2OneRoom(path):
 		import binascii
 		import time
 		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
-		return redirect("/One2One/"+room_id)
-	prefix= "One2One:"
+		return redirect("/versuschat/"+room_id)
+	prefix= "versus_chat:"
 	r= redis_RoomSession
 	val= r.get(prefix+path)
 	if val is not None:
 		enter_existing_room()
 	else:
 		create_new_room(r, prefix, path)
-	return render_template("One2One.html")
+	return render_template("versuschat.html")
 
 @app.route('/chatting/<path:path>')
 def chattingroom(path):
