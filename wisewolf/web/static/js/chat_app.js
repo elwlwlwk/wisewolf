@@ -7,8 +7,7 @@ require([
 	], function(dom, on, chat, popup){
 		URL_split= document.URL.split("/");
 		chat_room_seq= URL_split[URL_split.indexOf("chatting")+1];//get element which next of 'chat'
-		chat.connect_server("wss://clug2.clug.kr/ws/chat/"+chat_room_seq);
-		chat.auto_height_resize();
+		chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq);
 		on(window,"resize", function(){
 			chat.auto_height_resize();
 		})
@@ -34,5 +33,8 @@ require([
 		on(dom.byId("chat_log"), "scroll", function(event){
 			chat.req_past_message()	
 		})
+		chat.auto_height_resize();
+		chat.auto_height_resize();
+		chat.auto_height_resize();
 	}
 )

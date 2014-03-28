@@ -85,7 +85,7 @@ def One2OneRoom(path):
 		create_new_room(r, prefix, path)
 	return render_template("versuschat.html")
 
-@app.route('/chatting/<path:path>')
+@app.route('/chatting/<path:path>', methods=['POST','GET'])
 def chattingroom(path):
 #	print "path: "+path
 	if path =='new':
@@ -170,6 +170,10 @@ def file(path):
 	resp = make_response(open(fullpath).read())
 	resp.content_type = "application/octet-stream"
 	return resp
+
+@app.route("/popup/<path:path>")
+def popup(path):
+	return render_template("popup/"+path);
 
 @app.route('/vote', methods=['POST'])
 def vote():
