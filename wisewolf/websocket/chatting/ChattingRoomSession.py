@@ -11,10 +11,10 @@ class ChattingRoomSession:
 			return
 		self.rooms[room_seq]= Room(room_seq, session= self.redis_conn)
 			
-	def validate_room(self, req_room, prefix):
+	def validate_room(self, req_room):
 		#prefix= "chat_room:"
 		r= self.redis_conn
-		val= r.get(prefix+req_room)
+		val= r.get(req_room)
 		if val is None:
 			return False
 		else:

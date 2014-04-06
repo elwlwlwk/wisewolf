@@ -35,7 +35,6 @@ class Room:
 		else:
 			self.chat_log_collection= chat_log_collection
 
-		self.prefix="chat_room:"
 		self.heartbeat_time= int(time())
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
@@ -60,6 +59,7 @@ class Room:
 			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
 			for chatter in self.chatters:
 				if chatter.alive== -2:
+					#print "[timeout] "+chatter.request.headers["X-Real-Ip"]+" "+chatter.name
 					self.remove_chatter(chatter)
 					chatter.close()
 				else:

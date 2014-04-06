@@ -25,10 +25,10 @@ class TestChattingRoomSession(unittest.TestCase):
 		self.session= ChattingRoomSession(session= self.redis_conn)
 	
 	def test_validate_room(self):
-		self.assertFalse(self.session.validate_room("not_valid_room","not_valid"))
+		self.assertFalse(self.session.validate_room("not_valid_room"))
 		
-		self.redis_conn.set("chat_room:valid_room_for_test", '')
-		self.assertTrue(self.session.validate_room("valid_room_for_test","chat_room:"))
+		self.redis_conn.set("valid_room_for_test", '')
+		self.assertTrue(self.session.validate_room("valid_room_for_test"))
 	
 	def test_add_room(self):
 		self.session.add_room("test_room")

@@ -1,5 +1,5 @@
 import os
-from flask import render_template, g, request, session, redirect, url_for, make_response
+from flask import render_template, g, request, session, redirect, url_for, make_response, flash, abort
 import sqlite3
 from contextlib import closing
 import psycopg2
@@ -7,6 +7,9 @@ from redis_session import RedisSessionInterface
 from wisewolf.web import app
 from wisewolf.websocket.chatting import redis_RoomSession
 from wisewolf.websocket import Mongo_Wisewolf
+import binascii
+import time
+
 
 from pymongo import MongoClient
 import json
@@ -42,6 +45,14 @@ def teardown_request(exception):
 	if con:
 		con.close()
 
+@app.errorhandler(405)
+def notfound(error):
+	return "Please do not attack my castle. Go away!"
+
+@app.errorhandler(501)
+def notimplemeted(error):
+	return "Not implemeted yet. sry"
+	
 # make url mapping
 def make_url_mapping():
 	import views
@@ -67,53 +78,40 @@ make_url_mapping()
 from datetime import timedelta
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
 
-@app.route('/versuschat/<path:path>')
-def One2OneRoom(path):
-#	print "path: "+path
-	if path =='new':
-		import os
-		import binascii
-		import time
-		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
-		return redirect("/versuschat/"+room_id)
-	prefix= "versus_chat:"
-	r= redis_RoomSession
-	val= r.get(prefix+path)
-	if val is not None:
-		enter_existing_room()
-	else:
-		create_new_room(r, prefix, path)
-	return render_template("versuschat.html")
-
 @app.route('/chatting/<path:path>', methods=['POST','GET'])
 def chattingroom(path):
 #	print "path: "+path
-	if path =='new':
-		import os
-		import binascii
-		import time
-		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
-		return redirect("/chatting/"+room_id)
-	prefix= "chat_room:"
 	r= redis_RoomSession
-	val= r.get(prefix+path)
+	val= r.get(path)
+
+	if path =='new':
+		if request.method!= 'POST':
+			abort(405)
+		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
+		create_new_room(r, room_id, request)
+		return redirect("/chatting/"+room_id)
 	if val is not None:
 		enter_existing_room()
 	else:
-		create_new_room(r, prefix, path)
-	return render_template("chatting_room.html")
-	
+		abort(405)
+	room_info= json.loads(r.get(path))
+	if room_info["room_kind"]== "generic":
+		return render_template("chatting_room.html")
+	elif room_info["room_kind"]== "versus":
+		return render_template("versuschat.html")
+	else:
+		abort(501)
+
 def enter_existing_room():
 	pass
 
-def create_new_room(r, prefix, path):
-	r.setex(prefix + path, '',\
-int(CHATTING_ROOM_EXPIRE.total_seconds()))
+def create_new_room(r, room_seq, request):
+	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"]}
 
-	
+	r.setex(room_seq, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+
 @app.route('/gallery')
 def gallery():
-	from flask import flash
 	gen_thumb()
 	img_list= os.listdir('./wisewolf/web/imgs/thumbgen')
 	for img in img_list:
@@ -155,7 +153,6 @@ def base(path):
 
 @app.route("/files")
 def files():
-	from flask import flash
 	gen_thumb()
 	file_list= os.listdir('./wisewolf/web/file')
 	file_list.sort()
@@ -177,13 +174,14 @@ def popup(path):
 
 @app.route('/vote', methods=['POST'])
 def vote():
+	room_seq= request.form["tag_room"].replace("#","")
 	if session.has_key('user')!= True:
 		try:
-			return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+			return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 		except TypeError, e:
 			return ''
 
-	room= g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})
+	room= g.mongo.rooms.find_one({"room_seq":room_seq})
 	def vote_tag(pros_cons, new_tag= True):
 		updated= True
 		if new_tag== True:
@@ -199,10 +197,9 @@ def vote():
 				break;
 		if updated== False:
 			room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
-		g.mongo.rooms.update({"room_seq":request.form['tag_room']},{"$set":{"tags":room_tags}})
+		g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":room_tags}})
 
 		pass
-	prefix= "chat_room:"
 	if request.form['tag_type']== 'new':
 		dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
 		if room is None:
@@ -212,12 +209,12 @@ def vote():
 				if room.has_key('tags'):# if room already has tag, vote up the tag
 					vote_tag("up")
 				else:
-					g.mongo.rooms.update({"room_seq":request.form['tag_room']},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
-			return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+					g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
+			return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 	elif request.form['tag_type']== 'vote':
 		dest_tag= request.form['dest_tag'].replace(" ","").strip()
 		vote_tag(request.form['pros_cons'], new_tag= False)
-		return json.dumps(g.mongo.rooms.find_one({"room_seq":request.form['tag_room']})['tags'])
+		return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 
 	
 if __name__ == '__main__':
