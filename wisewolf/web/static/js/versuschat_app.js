@@ -37,8 +37,41 @@ require([
 		on(window,"resize", function(){
 			main_chat.auto_h_resize();
 		})
+
+		var chat_to_send_support= dom.byId("chat_to_send_"+room_id+"_support");
+		var send_button_support= dom.byId("send_button_"+room_id+"_support");
+		var chat_log_support= dom.byId("chat_log_"+room_id+"_support");
+		var support_chat= new chat(chat_room_seq+"_support", dom.byId("chat_log_"+chat_room_seq+"_support"),
+			dom.byId("chatters_"+chat_room_seq+"_support"));
+		support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
+		sendChatMessage_support= function(){
+			var message={};
+			message["proto_type"]="chat_message";
+			message["message"]= chat_to_send_support.value;
+			support_chat.send_msg_server(message);
+			chat_to_send_support.value='';
+		};
+		on(send_button_support, "click", sendChatMessage_support);
+		on(chat_to_send_support, "keypress", function(event){
+			if(event.keyCode== 13){
+				sendChatMessage_support();
+			}
+		})
+		on(chat_to_send, "keyup", function(event){
+			if(event.keyCode== 13){
+				chat_to_send_support.value='';
+			}
+		})
+		on(window,"resize", function(){
+			support_chat.auto_h_resize();
+		})
+		on(chat_log_support, "scroll", function(event){
+			support_chat.req_past_message()	
+		})
+		
 		for(var i=0; i<10; i++){
 			main_chat.auto_h_resize();
+			support_chat.auto_h_resize();
 		}
 	}
 )

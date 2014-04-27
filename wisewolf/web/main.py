@@ -45,12 +45,16 @@ def teardown_request(exception):
 	if con:
 		con.close()
 
-@app.errorhandler(405)
+@app.errorhandler(404)
 def notfound(error):
+	return "Not found... What r u doing?"
+
+@app.errorhandler(405)
+def invalid_request(error):
 	return "Please do not attack my castle. Go away!"
 
 @app.errorhandler(501)
-def notimplemeted(error):
+def not_implemeted(error):
 	return "Not implemeted yet. sry"
 	
 # make url mapping
@@ -95,6 +99,7 @@ def chattingroom(path):
 	else:
 		abort(405)
 	room_info= json.loads(r.get(path))
+	g.room_id=path
 	if room_info["room_kind"]== "generic":
 		return render_template("chatting_room.html")
 	elif room_info["room_kind"]== "versus":
@@ -105,10 +110,11 @@ def chattingroom(path):
 def enter_existing_room():
 	pass
 
-def create_new_room(r, room_seq, request):
+def create_new_room(r, room_id, request):
 	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"]}
-
-	r.setex(room_seq, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+	if request.form["room_kind"]== "versus":
+		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 
 @app.route('/gallery')
 def gallery():
@@ -177,7 +183,10 @@ def vote():
 	room_seq= request.form["tag_room"].replace("#","")
 	if session.has_key('user')!= True:
 		try:
-			return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
+			if 'tags' in g.mongo.rooms.find_one({"room_seq":room_seq}):
+				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
+			else:
+				return ''
 		except TypeError, e:
 			return ''
 

@@ -73,6 +73,16 @@ define([
 		new_room: function(){
 			popup_xhr("/popup/newroom.html", function(){
 				on(dom.byId("btn_cancel"), "click", close_popup);
+				on(dom.byId("select_room_kind"), "change", function(e){
+					switch(e.currentTarget.value){
+						case "generic":
+							dom.byId("span_num_part").innerHTML="Number of Participants";
+							break;
+						case "versus":
+							dom.byId("span_num_part").innerHTML="Number of Supporters(Each Team)";
+							break;
+					}
+				});
 			}, "moderate");
 		},
 		close_popup: function(){

@@ -1,12 +1,22 @@
 {% block head %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/chat_app.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/versuschat_app.js') }}"></script>
 {% endblock %}
 
 {% block body %}
 <input type="hidden" name="user_id" id="user_id" value="{{ request.cookies.get("session") }}" />
 <input type="hidden" name="room_id" id="room_id" value="{{ request.cookies.get("session") }}" />
 <div id="chat_wrapper">
-  <div class="wrapper col-md-12" >
+  <div class="wrapper" style="width: 40%; float: left;">
+    <div class="" id="chatters_{{ g.room_id }}_support" tabindex="0" style="width:15%; float:right">
+    </div>
+    <div class="chat_log" id="chat_log_{{ g.room_id }}_support" tabindex="0" class="col-md-10" style="overflow-y:scroll;width:85%">
+    </div>
+    <div class="">
+      <textarea class="form-control chat_to_send" id="chat_to_send_{{ g.room_id }}_support" rows="3" style="float:left; width:85%"></textarea>
+      <button class="btn btn-primary" style="width:15%; height:90px;" id="send_button_{{ g.room_id }}_support">Send</button>
+    </div>
+  </div>
+  <div class="wrapper" style="width: 60%; float: left">
     <div class="" id="chatters_{{ g.room_id }}" tabindex="0" style="width:15%; float:right">
     </div>
     <div class="chat_log" id="chat_log_{{ g.room_id }}" tabindex="0" class="col-md-10" style="overflow-y:scroll;width:85%">
