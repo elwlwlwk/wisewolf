@@ -11,6 +11,7 @@ class TestRoom(unittest.TestCase):
 			self.status='connect'
 			self.name="mock_chatter"
 			self.ws_connection="dummy"
+			self.opper= False
 		def get_name(self):
 			return self.name
 		def set_my_room(self, room):
@@ -51,13 +52,13 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		self.chat_log_collection.drop()
 
 	def test_add_chatter(self):
-		self.room.add_chatter(self.mock_chatter())
-		self.assertTrue("mock_chatter" in self.room.chatters_name)
+		mock_chatter= self.mock_chatter()
+		self.room.add_chatter(mock_chatter)
+		self.assertTrue(mock_chatter in self.room.chatters)
 		self.assertEquals(len(self.room.chatters), 1)
 		
 		self.room.add_chatter(self.mock_chatter())
 		self.assertEquals(len(self.room.chatters), 2)
-		self.assertEquals(len(self.room.chatters_name), 2)
 
 	def test_add_waiting_chatter(self):
 		chatter= self.mock_chatter()
@@ -259,3 +260,9 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 			self.room.save_chat_mongo(message)
 
 		self.assertEqual(self.room.load_chat_mongo(30,threshold=20), messages[10:29])
+	
+	def test_set_opper(self):
+		mock_chatter=self.mock_chatter()
+		self.room.add_chatter(mock_chatter)
+		self.room.set_opper(self.room.chatters[0])
+		self.assertEqual(self.room.chatters[0].opper, True)

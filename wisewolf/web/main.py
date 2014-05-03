@@ -124,6 +124,18 @@ def gallery():
 		flash(img)
 	return render_template("gallery.html") 
 
+@app.route('/videos/<path:path>')
+def videos(path):
+	print path
+	flash(path)
+	return render_template("video.html") 
+
+@app.route("/video/<path:path>")
+def vidoe(path):
+	fullpath = "./wisewolf/web/videos/" + path
+	resp = make_response(open(fullpath).read())
+	return resp
+
 @app.route("/imgs/<path:path>")
 def images(path):
 	gen_thumb()

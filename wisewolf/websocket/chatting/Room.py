@@ -21,7 +21,6 @@ class Room:
 	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None):
 		self.room_seq= room_seq
 		self.chatters=[]
-		self.chatters_name=[]
 		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
 		db=Mongo_Wisewolf
@@ -45,7 +44,8 @@ class Room:
 
 	def add_chatter(self, chatter):
 		self.chatters.append(chatter)
-		self.chatters_name.append(chatter.get_name())
+		if len(self.chatters) is 1:
+			self.set_opper(self.chatters[0])
 		self.broadcast_room_stat()
 		self.send_cur_chat_log(chatter)
 
@@ -87,7 +87,6 @@ class Room:
 
 	def remove_chatter(self, chatter):
 		self.chatters.remove(chatter)
-		self.chatters_name.remove(chatter.get_name())
 		self.broadcast_room_stat()
 	
 	def assemble_chat(self, chatter, message):
@@ -106,9 +105,12 @@ class Room:
 		
 	def broadcast_room_stat(self):
 		room_stat={}
+		chatters_name=[]
+		for chatter in self.chatters:
+			chatters_name.append(chatter.name)
 		room_stat["proto_type"]="room_stat"
 		room_stat["room_seq"]= self.room_seq
-		room_stat["chatters"]= self.chatters_name
+		room_stat["chatters"]= chatters_name
 		self.broadcast(room_stat)
 	
 	def send_cur_chat_log(self, chatter):
@@ -126,6 +128,7 @@ class Room:
 		elif loaded_msg["proto_type"]== "req_past_messages":
 			self.send_past_chats(chatter, loaded_msg["last_index"])
 		elif loaded_msg["proto_type"]=="first_handshake":			
+			print "first_handshake"
 			self.handle_first_handshake(chatter, loaded_msg["user_id"])
 	
 	def handle_first_handshake(self, chatter, user_id=""):
@@ -139,6 +142,9 @@ class Room:
 			self.add_chatter(chatter)
 		else:
 			return
+	
+	def set_opper(self, chatter):
+		chatter.opper= True
 	
 	def send_past_chats(self, chatter, last_index):
 		past_chats= self.load_chat_mongo(last_index)
