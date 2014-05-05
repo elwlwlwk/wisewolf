@@ -5,6 +5,7 @@
 {% block body %}
 <input type="hidden" name="user_id" id="user_id" value="{{ request.cookies.get("session") }}" />
 <input type="hidden" name="room_id" id="room_id" value="{{ request.cookies.get("session") }}" />
+<input type="hidden" name="pros_cons" id="input_pros_cons" value="" />
 <div id="chat_wrapper">
   <div class="wrapper" style="width: 40%; float: left;">
     <div class="" id="chatters_{{ g.room_id }}_support" tabindex="0" style="width:15%; float:right">

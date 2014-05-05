@@ -115,6 +115,7 @@ def create_new_room(r, room_id, request):
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	if request.form["room_kind"]== "versus":
 		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+		r.setex(room_id+"_supportB", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 
 @app.route('/gallery')
 def gallery():

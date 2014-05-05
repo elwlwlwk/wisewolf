@@ -1,8 +1,9 @@
 define([
 	"dojo/dom",
 	"dojo/on",
+	"dojo/topic",
 	"dojo/_base/xhr"
-], function(dom, on, xhr){
+], function(dom, on, topic, xhr){
 	function popup(element){
 		var body= dom.byId("body");
 		var back_ground= dom.byId("popup_background");
@@ -82,6 +83,18 @@ define([
 							dom.byId("span_num_part").innerHTML="Number of Supporters(Each Team)";
 							break;
 					}
+				});
+			}, "moderate");
+		},
+		pros_cons: function(){
+			popup_xhr("/popup/pros_cons.html", function(){
+				on(dom.byId("btn_pros"), "click", function(e){
+					topic.publish("select_pros_cons","pros");
+					close_popup()
+				});
+				on(dom.byId("btn_cons"), "click", function(e){
+					topic.publish("select_pros_cons","cons");
+					close_popup()
 				});
 			}, "moderate");
 		},

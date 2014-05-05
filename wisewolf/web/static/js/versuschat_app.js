@@ -1,10 +1,15 @@
 require([
 	"dojo/dom",
 	"dojo/on",
+	"dojo/topic",
 	"kb/chat",
 	"kb/popup",
 	"dojo/domReady!"
-	], function(dom, on, chat,popup){
+	], function(dom, on, topic, chat, popup){
+		var pros_cons= dom.byId("input_pros_cons")
+		if(pros_cons.value== ''){
+			popup.pros_cons();
+		}
 		var room_id= document.URL.split("/")[4].replace('#','');
 		var chat_log= dom.byId("chat_log_"+room_id);
 		var chat_to_send= dom.byId("chat_to_send_"+room_id);
@@ -43,7 +48,22 @@ require([
 		var chat_log_support= dom.byId("chat_log_"+room_id+"_support");
 		var support_chat= new chat(chat_room_seq+"_support", dom.byId("chat_log_"+chat_room_seq+"_support"),
 			dom.byId("chatters_"+chat_room_seq+"_support"));
-		support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
+		
+		if(pros_cons.value!=""){//this is for room opener or pre-selected user
+			if(pros_cons.value="pros"){
+				support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
+			}else{
+				support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportB");
+			}
+		}else{
+			topic.subscribe("select_pros_cons", function(text){
+				if(text== "pros"){
+					support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
+				}else{
+					support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportB");
+				}
+			})
+		}
 		sendChatMessage_support= function(){
 			var message={};
 			message["proto_type"]="chat_message";
@@ -57,7 +77,7 @@ require([
 				sendChatMessage_support();
 			}
 		})
-		on(chat_to_send, "keyup", function(event){
+		on(chat_to_send_support, "keyup", function(event){
 			if(event.keyCode== 13){
 				chat_to_send_support.value='';
 			}
