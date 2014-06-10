@@ -10,7 +10,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		self.alive= 0
 		self.name= binascii.b2a_hex(os.urandom(2))
 		self.my_room= None
-		self.opper= False
+		self.role= 'common'
 		tornado.websocket.WebSocketHandler.__init__(self, request, spec_kwargs)
 		pass
 	def open(self):

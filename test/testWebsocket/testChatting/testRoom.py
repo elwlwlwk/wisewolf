@@ -5,13 +5,13 @@ from wisewolf.websocket.chatting.Room import Room
 from wisewolf.websocket.chatting.chat_handler import ChattingHandler
 class TestRoom(unittest.TestCase):
 	class mock_chatter():
-		def __init__(self):
+		def __init__(self, name="mock_chatter"):
 			self.message=''
 			self.alive= 0
 			self.status='connect'
-			self.name="mock_chatter"
+			self.name= name
 			self.ws_connection="dummy"
-			self.opper= False
+			self.role= 'common'
 		def get_name(self):
 			return self.name
 		def set_my_room(self, room):
@@ -22,12 +22,12 @@ class TestRoom(unittest.TestCase):
 			self.status='close'
 
 	class mock_redisSession():
-		def __init__(self, name="chat_room:test_room", value=""):
+		def __init__(self, name="test_room", value=json.dumps({'room_kind':'generic', 'participants':'3'})):
 			self.name=name
 			self.value=value
 
 		def get(self, name):
-			if self.name != name:
+			if self.name!= name:
 				return None
 			else:
 				return self.value
@@ -51,14 +51,30 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		self.room_collection.drop()
 		self.chat_log_collection.drop()
 
-	def test_add_chatter(self):
+	def test_add_chatter(self):	#testcase for generic room
 		mock_chatter= self.mock_chatter()
 		self.room.add_chatter(mock_chatter)
 		self.assertTrue(mock_chatter in self.room.chatters)
 		self.assertEquals(len(self.room.chatters), 1)
+		self.assertEquals(self.room.chatters[0].role, 'opper')
 		
 		self.room.add_chatter(self.mock_chatter())
-		self.assertEquals(len(self.room.chatters), 2)
+		self.room.add_chatter(self.mock_chatter())
+		self.room.add_chatter(self.mock_chatter())
+		self.assertEquals(len(self.room.chatters), 4)
+		self.assertEquals(self.room.chatters[0].role, 'opper')
+		self.assertEquals(self.room.chatters[1].role, 'common')
+		self.assertEquals(self.room.chatters[2].role, 'observer')
+		self.assertEquals(self.room.chatters[3].role, 'observer')
+	
+	def test_add_chatter(self):	#testcase for versus room
+		self.room.room_meta['room_kind']="versus"
+		self.room.add_chatter(self.mock_chatter())
+		self.room.add_chatter(self.mock_chatter())
+		self.room.add_chatter(self.mock_chatter())
+		self.assertEquals(self.room.chatters[0].role, 'opper')
+		self.assertEquals(self.room.chatters[1].role, 'common')
+		self.assertEquals(self.room.chatters[2].role, 'observer')
 
 	def test_add_waiting_chatter(self):
 		chatter= self.mock_chatter()
@@ -174,7 +190,6 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 "chat_seq": 1}
 		self.room.message_handler(chatter, json.dumps(message))
 		self.assertEqual(chatter.message, json.dumps(dest_message))
-
 	
 	def test_message_handler2(self):
 		chatter= self.mock_chatter()
@@ -188,6 +203,35 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		message={"proto_type":"req_past_messages", "last_index":30}
 		self.room.message_handler(chatter, json.dumps(message))
 		self.assertEqual(chatter.message, json.dumps(messages[28]))
+	
+	def test_broadcast_chat(self):
+		chatter= self.mock_chatter()
+		chatter2= self.mock_chatter()
+		self.room.add_chatter(chatter)
+		self.room.add_chatter(chatter2)
+		message={"proto_type":"chat_message", "message":"test_message"}
+		dest_message={"proto_type":"chat_message", "sender":chatter.get_name(), "message":"test_message",\
+"chat_seq": 1}
+		self.room.message_handler(chatter, json.dumps(message))
+		self.assertEqual(chatter.message, json.dumps(dest_message))
+		self.assertEqual(chatter2.message, json.dumps(dest_message))
+	
+	def test_chat_handler(self):
+		chatter= self.mock_chatter(name='eeee')
+		chatter2= self.mock_chatter()
+		self.room.add_chatter(chatter)
+		self.room.add_chatter(chatter2)
+		self.room.set_role(self.room.chatters[1], 'observer')
+		message={"proto_type":"chat_message", "message":"test_message"}
+		dest_message={"proto_type":"chat_message", "sender":chatter.get_name(), "message":"test_message",\
+"chat_seq": 1}
+		self.room.message_handler(chatter, json.dumps(message))
+		self.assertEqual(chatter.message, json.dumps(dest_message))
+		self.assertEqual(chatter2.message, json.dumps(dest_message))
+
+		self.room.message_handler(chatter2, json.dumps(message))# Don't broadcast message when sender is observer
+		self.assertEqual(chatter.message, json.dumps(dest_message))
+		self.assertEqual(chatter2.message, json.dumps(dest_message))
 
 	def test_send_past_chats(self):
 		chatter= self.mock_chatter()
@@ -222,10 +266,12 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 
 		self.room.add_chatter(chatter)
 		self.room.add_chatter(chatter2)
+		self.room.add_chatter(self.mock_chatter())
+		self.room.add_chatter(self.mock_chatter())
 		self.room.broadcast_room_stat()
 
 		message={"proto_type":"room_stat", "room_seq":self.room.room_seq,\
-"chatters":["mock_chatter","mock_chatter2"]}
+"chatters":["mock_chatter","mock_chatter2", "mock_chatter"]}
 
 		self.assertEqual(chatter.message, json.dumps(message))
 		self.assertEqual(chatter2.message, json.dumps(message))
@@ -261,8 +307,9 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 
 		self.assertEqual(self.room.load_chat_mongo(30,threshold=20), messages[10:29])
 	
-	def test_set_opper(self):
+	def test_set_role(self):
 		mock_chatter=self.mock_chatter()
 		self.room.add_chatter(mock_chatter)
-		self.room.set_opper(self.room.chatters[0])
-		self.assertEqual(self.room.chatters[0].opper, True)
+		self.room.set_role(self.room.chatters[0], "opper")
+		self.assertEqual(self.room.chatters[0].role, "opper")
+	

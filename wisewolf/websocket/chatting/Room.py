@@ -38,16 +38,29 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
+		self.room_meta= json.loads(self.redis_conn.get(self.room_seq))
+
 	def add_waiting_chatter(self, chatter):
 		chatter.set_my_room(self)
 		self.waiting_chatters.append(chatter)
 
 	def add_chatter(self, chatter):
+		try:
+			if self.room_meta["num_of_participants"]!= ''and len(self.chatters)>= int(self.room_meta["num_of_participants"]):
+				chatter.role="observer"
+		except ValueError, e:
+			self.room_meta["num_of_participants"]=''
+		if len(self.chatters) is 0:
+			chatter.role="opper"
+		if self.room_meta["room_kind"]=="versus" and len(self.chatters) is 1:
+			chatter.role="common"
+		elif self.room_meta["room_kind"]=="versus" and len(self.chatters) > 1:
+			chatter.role="observer"
 		self.chatters.append(chatter)
-		if len(self.chatters) is 1:
-			self.set_opper(self.chatters[0])
 		self.broadcast_room_stat()
 		self.send_cur_chat_log(chatter)
+
+		print self.room_meta
 
 
 	def send_heartbeat(self):
@@ -107,7 +120,8 @@ class Room:
 		room_stat={}
 		chatters_name=[]
 		for chatter in self.chatters:
-			chatters_name.append(chatter.name)
+			if chatter.role!= "observer":
+				chatters_name.append(chatter.name)
 		room_stat["proto_type"]="room_stat"
 		room_stat["room_seq"]= self.room_seq
 		room_stat["chatters"]= chatters_name
@@ -122,14 +136,18 @@ class Room:
 	def message_handler(self, chatter, message):
 		loaded_msg= json.loads(message)
 		if loaded_msg["proto_type"]== "chat_message":
-			self.broadcast_chat(chatter, loaded_msg)
+			self.chat_handler(chatter, loaded_msg)
 		elif loaded_msg["proto_type"]== "heartbeat":
 			self.heartbeat_handler(chatter, loaded_msg)
 		elif loaded_msg["proto_type"]== "req_past_messages":
 			self.send_past_chats(chatter, loaded_msg["last_index"])
 		elif loaded_msg["proto_type"]=="first_handshake":			
-			print "first_handshake"
 			self.handle_first_handshake(chatter, loaded_msg["user_id"])
+	
+	def chat_handler(self, chatter, message):
+		if chatter.role in ['observer']:
+			return
+		self.broadcast_chat(chatter, message)
 	
 	def handle_first_handshake(self, chatter, user_id=""):
 		if chatter in self.waiting_chatters:
@@ -143,15 +161,14 @@ class Room:
 		else:
 			return
 	
-	def set_opper(self, chatter):
-		chatter.opper= True
+	def set_role(self, chatter, role='common'):
+		chatter.role= role
 	
 	def send_past_chats(self, chatter, last_index):
 		past_chats= self.load_chat_mongo(last_index)
 		for chat in past_chats:
 			chat["past_chat"]="true";
 			self.unicast(chatter, chat)
-			
 
 	def extract_exceed_messages(self, messages, threshold= 20):
 		loaded_messages=[]
@@ -178,7 +195,6 @@ class Room:
 			else:
 				chat_log_document["chat_log"].append(message)
 				self.chat_log_collection.update({"room_id":room_document["_id"]},{"$set":{"chat_log":chat_log_document["chat_log"]}})
-	
 		else:
 			pass
 	

@@ -11,6 +11,7 @@ define([
 			this.chat_log= chat_log;
 			this.chatters_list= chatters_list;
 			this.div_vote=dom.byId("div_vote");
+			this.list_chatters=[];
 		},
 		connect_server:function(host){
 			this.ws= dojox.socket(host);
@@ -38,6 +39,9 @@ define([
 		},
 		send_msg_server:function(message){
 			this.ws.send(JSON.stringify(message));
+		},
+		get_list_chatters:function(){
+			return this.list_chatters;	
 		},
 		chatMessageHandler:chatMessageHandler,
 		roomStatHandler:roomStatHandler,
@@ -98,6 +102,7 @@ define([
 		this.chatters_list.innerHTML='';
 		for(var i=0; i< chatters.length; i++){
 			this.chatters_list.innerHTML+="<p>"+chatters[i]+"</p>";
+			this.list_chatters.push(chatters[i]);
 		}
 	}
 	

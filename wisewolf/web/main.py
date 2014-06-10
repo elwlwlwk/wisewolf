@@ -2,6 +2,7 @@ import os
 from flask import render_template, g, request, session, redirect, url_for, make_response, flash, abort
 import sqlite3
 from contextlib import closing
+from datetime import timedelta
 import psycopg2
 from redis_session import RedisSessionInterface
 from wisewolf.web import app
@@ -9,7 +10,8 @@ from wisewolf.websocket.chatting import redis_RoomSession
 from wisewolf.websocket import Mongo_Wisewolf
 import binascii
 import time
-
+import views
+import config
 
 from pymongo import MongoClient
 import json
@@ -19,7 +21,6 @@ config_loc='DEV'
 
 # config flask app
 if('config.py' in os.listdir('./')):
-	import config
 	app.config.from_object('config.DevelopmentConfig')
 else:
 	app.session_interface= RedisSessionInterface()
@@ -59,7 +60,6 @@ def not_implemeted(error):
 	
 # make url mapping
 def make_url_mapping():
-	import views
 	app.add_url_rule('/', view_func= views.RenderTemplateView.as_view('root',\
 template_name='index.html'))
 	app.add_url_rule('/index', view_func= views.RenderIndex.as_view('index'))
@@ -79,7 +79,6 @@ template_name='signup.html'))
 
 make_url_mapping()
 
-from datetime import timedelta
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
 
 @app.route('/chatting/<path:path>', methods=['POST','GET'])
@@ -111,10 +110,13 @@ def enter_existing_room():
 	pass
 
 def create_new_room(r, room_id, request):
-	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"]}
+	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"],\
+"num_of_participants":request.form["participants"], "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	if request.form["room_kind"]== "versus":
+		room_info["room_kind"]="versus_supportA"
 		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+		room_info["room_kind"]="versus_supportB"
 		r.setex(room_id+"_supportB", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 
 @app.route('/gallery')

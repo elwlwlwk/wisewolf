@@ -1,14 +1,14 @@
 import unittest
+import json
 from wisewolf.websocket.chatting.ChattingRoomSession import ChattingRoomSession
 
 from wisewolf.websocket.chatting import redis_RoomSession
 
 class TestChattingRoomSession(unittest.TestCase):
-
 	class mock_redisSession():
-		def __init__(self):
-			self.name=''
-			self.value=''
+		def __init__(self, name="test_room", value=json.dumps({'test':'test'})):
+			self.name=name
+			self.value=value
 
 		def get(self, name):
 			if self.name != name:
