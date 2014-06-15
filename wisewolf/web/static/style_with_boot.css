@@ -75,3 +75,9 @@ div.popup_content{
 .right_align{
 	text-align: right;
 }
+.clickable{
+	cursor: pointer;
+}
+.td_room_participants{
+	width: 150px;
+}

@@ -81,6 +81,23 @@ make_url_mapping()
 
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
 
+@app.route('/chat_list', methods=['POST', 'GET'])
+def chat_list():
+	r= redis_RoomSession
+	room_list= r.keys()
+	room_list.sort(reverse= True)
+	for key in room_list:
+		if 'support' in key:
+			continue
+		room= json.loads(r.get(key))
+		try:
+			room_info= {"key":key, "title":room["room_title"],"cur_participants":room["cur_participants"],
+"max_participants":(lambda x: '*' if x=='' else x)(room["max_participants"])}
+		except:
+			room_info= {"key":"error", "title":"error", "max_participants":"error", "cur_participants":"error"}
+		flash(room_info)
+	return render_template("list_chat_rooms.html")
+	
 @app.route('/chatting/<path:path>', methods=['POST','GET'])
 def chattingroom(path):
 #	print "path: "+path
@@ -111,7 +128,7 @@ def enter_existing_room():
 
 def create_new_room(r, room_id, request):
 	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"],\
-"num_of_participants":request.form["participants"], "open_time":str(time.time())}
+"max_participants":request.form["participants"], "cur_participants":0, "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	if request.form["room_kind"]== "versus":
 		room_info["room_kind"]="versus_supportA"

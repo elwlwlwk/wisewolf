@@ -28,7 +28,7 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/index_layout.js') }}"></script>
    {% block head %}{% endblock %}
   </head>
-  <body id="body" role="documnet">
+  <body id="body" role="document">
     <div class="navbar navbar-inverse navbar-fixed-top">
 	  <div class="container">
         <div class="navbar-header">
@@ -46,6 +46,7 @@
             <li><a href="{{ url_for('index') }}">Home</a></li>
             <li><a href="/profile">Profile</a></li>
             <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/chat_list">Chatting List</a></li>
 			<li><a href="#" id="a_newchat">Chatting</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">

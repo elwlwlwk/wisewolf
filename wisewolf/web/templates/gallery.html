@@ -5,7 +5,7 @@
 {% for img in get_flashed_messages() %}
 <a href="/imgs/thumbgen/{{ img }}">
   <div class="gal_img">
-    <img src="/imgs/thumbnail/{{ img }}" />
+    <img src="/imgs/thumbnail/{{ img }}" alt="{{ img }}" />
   </div>
 </a>
 {% endfor %}

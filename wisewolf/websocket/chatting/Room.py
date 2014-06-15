@@ -46,10 +46,10 @@ class Room:
 
 	def add_chatter(self, chatter):
 		try:
-			if self.room_meta["num_of_participants"]!= ''and len(self.chatters)>= int(self.room_meta["num_of_participants"]):
+			if self.room_meta["max_participants"]!= ''and len(self.chatters)>= int(self.room_meta["max_participants"]):
 				chatter.role="observer"
 		except ValueError, e:
-			self.room_meta["num_of_participants"]=''
+			self.room_meta["max_participants"]=''
 		if len(self.chatters) is 0:
 			chatter.role="opper"
 		if self.room_meta["room_kind"]=="versus" and len(self.chatters) is 1:
