@@ -81,22 +81,40 @@ make_url_mapping()
 
 CHATTING_ROOM_EXPIRE= timedelta(hours=24)
 
-@app.route('/chat_list', methods=['POST', 'GET'])
-def chat_list():
+@app.route('/room_search', methods=['POST', 'GET'])
+def room_search():
 	r= redis_RoomSession
 	room_list= r.keys()
 	room_list.sort(reverse= True)
+	return render_template("room_search.html")
+
+@app.route('/get_room_list', methods=['POST', 'GET'])
+def get_room_list():
+	search_request= request.get_json(force=True)
+	r= redis_RoomSession
+	room_list= r.keys()
+	room_list.sort(reverse= True)
+	result={}
+	result['room_info']=[]
+
+	result_counter=0
 	for key in room_list:
 		if 'support' in key:
 			continue
+		if result_counter>=int(search_request['seq'])+20:
+			break
 		room= json.loads(r.get(key))
-		try:
-			room_info= {"key":key, "title":room["room_title"],"cur_participants":room["cur_participants"],
-"max_participants":(lambda x: '*' if x=='' else x)(room["max_participants"])}
-		except:
-			room_info= {"key":"error", "title":"error", "max_participants":"error", "cur_participants":"error"}
-		flash(room_info)
-	return render_template("list_chat_rooms.html")
+		if search_request["keyword"] in room["room_title"]:
+			result_counter+=1
+			if result_counter>= search_request['seq']:
+				try:
+					result['room_info'].append({"key":key, "title":room["room_title"],"cur_participants":room["cur_participants"],
+"max_participants":(lambda x: '*' if x=='' else x)(room["max_participants"])})
+				except:
+					result['room_info'].append(room_info= {"key":"error", "title":"error", "max_participants":"error", "cur_participants":"error"})
+	
+	print json.dumps(result)
+	return json.dumps(result)
 	
 @app.route('/chatting/<path:path>', methods=['POST','GET'])
 def chattingroom(path):
@@ -127,8 +145,13 @@ def enter_existing_room():
 	pass
 
 def create_new_room(r, room_id, request):
+	max_participants= request.form["participants"]
+	try:
+		max_participants= int(max_participants)
+	except:
+		max_participants= ''
 	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"],\
-"max_participants":request.form["participants"], "cur_participants":0, "open_time":str(time.time())}
+"max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	if request.form["room_kind"]== "versus":
 		room_info["room_kind"]="versus_supportA"

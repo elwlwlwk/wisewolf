@@ -1,0 +1,60 @@
+{% extends "index_layout.html" %}
+
+{% block head %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/room_search.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<div class="col-md-12">
+  <h2>Browse Room</h2>
+  <table class="table">
+    <tr>
+	  <td>
+	    <div class="input-group col-md-3 col-sm-4 col-xs-6">
+          <input id="input_room_search" class="form-control" placeholder="Enter keyword"></input>
+		  <span class="input-group-btn">
+		    <button id="button_room_search" type="button" class="btn btn-default">Search</button>
+		  </span>
+		</div>
+	  </td>
+    </tr>
+  </table>
+</div>
+<div class="col-xs-8" id="div_room_list">
+  <table class="table table-hover table_room_list" id="table_room_list">
+    <thead>
+	  <tr>
+	    <th class="text-center">
+		  Mark
+		</th>
+	    <th>
+		  Title
+	    </th>
+		<th class="text-center">
+		  Participants
+		</th>
+	  </tr>
+	</thead>
+    <tbody>
+<!--  
+      <tr class="tr_room">
+	    <td class="col-xs-1 clickable text-center"><span class="glyphicon glyphicon-star-empty td_room_mark"></span> </td>
+	    <td class="td_room_title col-xs-10 clickable">title</td>
+      	<td class="td_room_participant col-xs-1 clickable text-center">3 / 5</td>
+	  </tr>
+-->
+	</tbody>
+  </table>
+</div>
+<div class="col-xs-4" id="div_room_info_wrapper">
+  <h2>Room Info</h2>
+  <hr />
+    <div class="" id="div_room_info">
+    </div>
+  <div class="progress progress-striped active" style="margin-top:50px; visibility:hidden;" id="room_info_progress">
+    <div class="progress-bar" style="width:100%">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

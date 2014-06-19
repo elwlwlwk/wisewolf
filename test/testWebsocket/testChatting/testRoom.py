@@ -22,7 +22,7 @@ class TestRoom(unittest.TestCase):
 			self.status='close'
 
 	class mock_redisSession():
-		def __init__(self, name="test_room", value=json.dumps({'room_kind':'generic', 'participants':'3'})):
+		def __init__(self, name="test_room", value=json.dumps({'room_kind':'generic', 'max_participants':'3'})):
 			self.name=name
 			self.value=value
 

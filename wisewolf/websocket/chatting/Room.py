@@ -61,7 +61,9 @@ class Room:
 		self.send_cur_chat_log(chatter)
 
 		print self.room_meta
-
+	
+	def update_redis(self):
+		pass
 
 	def send_heartbeat(self):
 		cur_time= int(time())
@@ -106,7 +108,7 @@ class Room:
 		chat_message={}
 		chat_message["proto_type"]= "chat_message"
 		chat_message["sender"]= chatter.get_name()
-		chat_message["message"]= Markup.escape(message["message"])
+		chat_message["message"]= str(Markup.escape(message["message"])).replace("\n","<br />")
 		chat_message["chat_seq"]= self.chat_seq
 		self.chat_seq+= 1
 		return chat_message

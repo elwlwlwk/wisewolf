@@ -12,8 +12,8 @@ require([
 		URL_split= document.URL.split("/");
 		chat_room_seq= URL_split[URL_split.indexOf("chatting")+1].replace('#','');//get element which next of 'chat'
 		var main_chat= new chat(chat_room_seq, dom.byId("chat_log_"+chat_room_seq), dom.byId("chatters_"+chat_room_seq));
-		main_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq);
-		sendChatMessage= function(){
+		main_chat.connect_server("wss://clug.wisewolf.org/ws/chat/"+chat_room_seq);
+		var sendChatMessage= function(){
 			var message={};
 			message["proto_type"]="chat_message";
 			message["message"]= chat_to_send.value;
