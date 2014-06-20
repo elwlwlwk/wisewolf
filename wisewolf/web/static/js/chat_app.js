@@ -2,9 +2,8 @@ require([
 	"dojo/dom",
 	"dojo/on",
 	"kb/chat",
-	"kb/popup",
 	"dojo/domReady!"
-	], function(dom, on, chat,popup){
+	], function(dom, on, chat){
 		var room_id= document.URL.split("/")[4].replace('#','');
 		var chat_log= dom.byId("chat_log_"+room_id);
 		var chat_to_send= dom.byId("chat_to_send_"+room_id);
@@ -12,7 +11,11 @@ require([
 		URL_split= document.URL.split("/");
 		chat_room_seq= URL_split[URL_split.indexOf("chatting")+1].replace('#','');//get element which next of 'chat'
 		var main_chat= new chat(chat_room_seq, dom.byId("chat_log_"+chat_room_seq), dom.byId("chatters_"+chat_room_seq));
-		main_chat.connect_server("wss://clug.wisewolf.org/ws/chat/"+chat_room_seq);
+		if(window.location.protocol=="https:"){
+			main_chat.connect_server("wss://"+window.location.host+"/ws/chat/"+chat_room_seq);
+		}else{
+			main_chat.connect_server("ws://"+window.location.host+"/ws/chat/"+chat_room_seq);
+		}
 		var sendChatMessage= function(){
 			var message={};
 			message["proto_type"]="chat_message";

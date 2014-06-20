@@ -21,16 +21,18 @@ define([
 	}
 
 	function popup_xhr(path, callback, width){
+		var popup_window= document.createElement("div");
+		if(width== null){
+			popup_window.setAttribute("class", "popup_window");
+		}
+		else if(width== "moderate"){
+			popup_window.setAttribute("class", "popup_window moderate_width");
+		}
+		popup(popup_window);// to prevent popup remain when close_popup function called before xhr arrives.
+
 		function display_popup(data){
-			var popup_window= document.createElement("div");
-			if(width== null){
-				popup_window.setAttribute("class", "popup_window");
-			}
-			else if(width== "moderate"){
-				popup_window.setAttribute("class", "popup_window moderate_width");
-			}
+			
 			popup_window.innerHTML=data;
-			popup(popup_window);
 
 			if(callback!= null){
 				callback();
@@ -97,6 +99,15 @@ define([
 					close_popup()
 				});
 			}, "moderate");
+		},
+		loading: function(){
+			var popup_window= document.createElement("div");
+			var data='<div class="popup_content" style="padding:0px; margin:-10px"><div class="progress progress-striped active" id="room_info_progress" style="margin-bottom:0px"><div class="progress-bar" style="width:100%"><span class="sr-only">Loading...</span></div></div></div>'
+			popup_window.setAttribute("class", "popup_window moderate_width");
+			popup(popup_window);
+			popup_window.innerHTML=data;
+
+			popup_positioning(popup_window);
 		},
 		close_popup: function(){
 			close_popup();

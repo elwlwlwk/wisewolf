@@ -24,18 +24,18 @@
   <table class="table table-hover table_room_list" id="table_room_list">
     <thead>
 	  <tr>
-	    <th class="text-center">
+	    <th class="text-center col-xs-1">
 		  Mark
 		</th>
-	    <th>
+	    <th class="col-xs-10">
 		  Title
 	    </th>
-		<th class="text-center">
+		<th class="text-center col-xs-1">
 		  Participants
 		</th>
 	  </tr>
 	</thead>
-    <tbody>
+    <tbody id="tbody_room_list">
 <!--  
       <tr class="tr_room">
 	    <td class="col-xs-1 clickable text-center"><span class="glyphicon glyphicon-star-empty td_room_mark"></span> </td>
@@ -44,6 +44,17 @@
 	  </tr>
 -->
 	</tbody>
+    <tfoot>
+	  <tr>
+	    <td colspan="3">
+	      <div class="progress progress-striped active" id="room_load_progress" style="visibility:hidden; margin-bottom:0px">
+            <div class="progress-bar" style="width:100%">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </td>
+	  </tr>
+	</tfoot>
   </table>
 </div>
 <div class="col-xs-4" id="div_room_info_wrapper">
