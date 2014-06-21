@@ -17,7 +17,11 @@ require([
 		URL_split= document.URL.split("/");
 		chat_room_seq= URL_split[URL_split.indexOf("chatting")+1].replace('#','');//get element which next of 'chat'
 		var main_chat= new chat(chat_room_seq, dom.byId("chat_log_"+chat_room_seq), dom.byId("chatters_"+chat_room_seq));
-		main_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq);
+		if(window.location.protocol=="https:"){
+			main_chat.connect_server("wss://"+window.location.host+"/ws/chat/"+chat_room_seq);
+		}else{
+			main_chat.connect_server("ws://"+window.location.host+"/ws/chat/"+chat_room_seq);
+		}
 		sendChatMessage= function(){
 			var message={};
 			message["proto_type"]="chat_message";
@@ -49,19 +53,25 @@ require([
 		var support_chat= new chat(chat_room_seq+"_support", dom.byId("chat_log_"+chat_room_seq+"_support"),
 			dom.byId("chatters_"+chat_room_seq+"_support"));
 
-		if(pros_cons.value!=""){//this is for room opener or pre-selected user
-			if(pros_cons.value="pros"){
-				support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
+		var connectSupport= function(pros_cons){
+			if(pros_cons== "pros"){
+				pros_cons= "_supportA";
 			}else{
-				support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportB");
+				pros_cons= "_supportB";
 			}
+			
+			if(window.location.protocol=="https:"){
+				support_chat.connect_server("wss://"+window.location.host+"/ws/chat/"+chat_room_seq+pros_cons);
+			}else{
+				support_chat.connect_server("ws://"+window.location.host+"/ws/chat/"+chat_room_seq+pros_cons);
+			}		
+		}
+
+		if(pros_cons.value!=""){//this is for room opener or pre-selected user
+			connectSupport(pros_cons.value);
 		}else{
 			topic.subscribe("select_pros_cons", function(text){
-				if(text== "pros"){
-					support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportA");
-				}else{
-					support_chat.connect_server("ws://clug2.clug.kr/ws/chat/"+chat_room_seq+"_supportB");
-				}
+				connectSupport(text);
 			})
 		}
 		sendChatMessage_support= function(){

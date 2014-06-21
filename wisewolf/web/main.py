@@ -88,9 +88,26 @@ def room_search():
 	room_list.sort(reverse= True)
 	return render_template("room_search.html")
 
+@app.route('/get_room_info', methods=['POST'])
+def get_room_info():
+	try:
+		info_request= request.get_json(force=True)
+		result= g.mongo.rooms.find_one({"room_seq":info_request["room_seq"]})
+		if result is None:
+			return '{}'
+		result.pop("_id")
+		return json.dumps(result)
+	except Exception as e:
+		print e
+		return '{}'
+
 @app.route('/get_room_list', methods=['POST', 'GET'])
 def get_room_list():
-	search_request= request.get_json(force=True)
+	search_request={}
+	try:
+		search_request= request.get_json(force=True)
+	except:
+		return '{}'
 	r= redis_RoomSession
 	room_list= r.keys()
 	room_list.sort(reverse= True)
@@ -112,8 +129,6 @@ def get_room_list():
 "max_participants":(lambda x: '*' if x=='' else x)(room["max_participants"])})
 				except:
 					result['room_info'].append(room_info= {"key":"error", "title":"error", "max_participants":"error", "cur_participants":"error"})
-	
-	print json.dumps(result)
 	return json.dumps(result)
 	
 @app.route('/chatting/<path:path>', methods=['POST','GET'])
