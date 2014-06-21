@@ -101,7 +101,7 @@ def get_room_info():
 		print e
 		return '{}'
 
-@app.route('/get_room_list', methods=['POST', 'GET'])
+@app.route('/get_room_list', methods=['POST'])
 def get_room_list():
 	search_request={}
 	try:
