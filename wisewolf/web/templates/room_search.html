@@ -36,13 +36,6 @@
 	  </tr>
 	</thead>
     <tbody id="tbody_room_list">
-<!--  
-      <tr class="tr_room">
-	    <td class="col-xs-1 clickable text-center"><span class="glyphicon glyphicon-star-empty td_room_mark"></span> </td>
-	    <td class="td_room_title col-xs-10 clickable">title</td>
-      	<td class="td_room_participant col-xs-1 clickable text-center">3 / 5</td>
-	  </tr>
--->
 	</tbody>
     <tfoot>
 	  <tr>
@@ -57,14 +50,40 @@
 	</tfoot>
   </table>
 </div>
-<div class="col-xs-4" id="div_room_info_wrapper">
-  <h2>Room Info</h2>
-  <hr />
+<div class="col-xs-4" style="padding:0px" id="div_room_info_wrapper">
+  <div class="room_info_sidebar col-xs-4">
+    <h2>Room Info</h2>
     <div class="" id="div_room_info">
+      <table class="table">
+	    <thead>
+	      <tr>
+	        <td class="col-xs-1"></td>
+		    <td ></td>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      <tr>
+	        <td>Title:</td>
+		    <td id="td_info_title"></td>
+		  </tr>
+		  <tr>
+		    <td>Kind:</td>
+		    <td id="td_info_kind"></td>
+          </tr>
+		  <tr>
+		    <td>Tags:</td>
+		    <td id="td_info_tags"><div id="div_info_tags" class="info_tags"></div></td>
+          </tr>
+		  <tr>
+		    <td colspan="2"><a class="col-xs-12 btn btn-lg btn-outline" id="a_enter_room" href="" style="display:none;">Join</a></td>
+		  </tr>
+	    </tbody>
+    </table>
     </div>
-  <div class="progress progress-striped active" style="margin-top:50px; visibility:hidden;" id="room_info_progress">
-    <div class="progress-bar" style="width:100%">
-      <span class="sr-only">Loading...</span>
+    <div class="progress progress-striped active" style="margin-top:50px; display:none;" id="room_info_progress">
+      <div class="progress-bar" style="width:100%">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
   </div>
 </div>

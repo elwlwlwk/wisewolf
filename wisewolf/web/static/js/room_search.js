@@ -8,15 +8,44 @@ require([
 	"dojo/domReady!"
 	], function(dom, domConstruct, domClass, on, xhr, popup){
 	
+		function display_tags(tags){
+			var td_info_tags= dom.byId("div_info_tags");
+			td_info_tags.innerHTML='';
+			sorted_tags=[]
+			for(var key in tags){
+				sorted_tags.push([tags[key]['up'], tags[key]['tag'], tags[key]['down']]);
+			}
+			sorted_tags.sort(function(m, n){return m[0]-n[0]});
+			for(var i= sorted_tags.length-1; i>=0; i--){
+				var tag= document.createElement("span");
+				var text= document.createTextNode(", ");
+				tag.setAttribute("id", "tag_button_"+sorted_tags[i][1]);
+				tag.setAttribute("class", "btn-outline");
+				tag.setAttribute("name", "tag");
+				tag.setAttribute("style", "word-break: break-all;");
+				tag.innerHTML= sorted_tags[i][1];
+				td_info_tags.appendChild(tag);
+				td_info_tags.appendChild(text);
+			}
+		}
 		var input_room_search= dom.byId("input_room_search");
 		var xhr_get_room_info= function(room_seq){
-			dom.byId("room_info_progress").style.visibility="visible";
+			dom.byId("div_room_info").style.display="none";
+			dom.byId("room_info_progress").style.display="block";
 			var xhrArgs={
 				url: "/get_room_info",
 				postData: JSON.stringify({"room_seq": room_seq}),
-				handleAs: "text",
+				handleAs: "json",
 				load: function(data){
-					dom.byId("room_info_progress").style.visibility="hidden";
+					dom.byId("td_info_title").innerHTML=data["room_title"];
+					dom.byId("td_info_kind").innerHTML=data["room_kind"];
+					display_tags(data['tags']);
+
+					dom.byId("td_info_kind");
+					dom.byId("a_enter_room").href= "/chatting/"+data["room_seq"];
+					dom.byId("a_enter_room").style.display= "";
+					dom.byId("room_info_progress").style.display="none";
+					dom.byId("div_room_info").style.display="block";
 					return;
 				}
 			}
@@ -51,7 +80,7 @@ require([
 						domClass.add(td_title, ["clickable", "td_room_title"]);
 						td_title.id=("td_title_"+room_list[seq]["key"]);
 						tr_room.appendChild(td_title);
-						on(td_title, "click", function(e){
+						on(tr_room, "click", function(e){
 							var room_seq= e.target.id.split("_")[2];
 							xhr_get_room_info(room_seq);
 						});

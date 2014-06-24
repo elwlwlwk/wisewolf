@@ -39,6 +39,10 @@ password='dlalsrb3!',\
 host='165.194.104.192')
 	g.db= con.cursor()
 	g.mongo= Mongo_Wisewolf
+	try:
+		print request.headers["X-Real-Ip"]+": "+request.headers["Referer"]
+	except:
+		pass
 
 # disconnect database
 @app.teardown_request
@@ -121,7 +125,7 @@ def get_room_list():
 		if result_counter>=int(search_request['seq'])+20:
 			break
 		room= json.loads(r.get(key))
-		if search_request["keyword"] in room["room_title"]:
+		if Markup.escape(search_request["keyword"]) in room["room_title"]:
 			result_counter+=1
 			if result_counter>= search_request['seq']:
 				try:
@@ -165,7 +169,7 @@ def create_new_room(r, room_id, request):
 		max_participants= int(max_participants)
 	except:
 		max_participants= ''
-	room_info={"room_kind":request.form["room_kind"], "room_title":request.form["title"],\
+	room_info={"room_kind":request.form["room_kind"], "room_title":Markup.escape(request.form["title"]),
 "max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	if request.form["room_kind"]== "versus":

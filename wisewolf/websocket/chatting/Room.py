@@ -39,6 +39,11 @@ class Room:
 		self.chat_seq= self.get_chat_seq()+1
 
 		self.room_meta= json.loads(self.redis_conn.get(self.room_seq))
+		
+		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
+"open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"]}
+		self.room_collection.insert(room_data)
+
 
 	def add_waiting_chatter(self, chatter):
 		chatter.set_my_room(self)
@@ -60,8 +65,6 @@ class Room:
 		self.broadcast_room_stat()
 		self.send_cur_chat_log(chatter)
 
-		print self.room_meta
-	
 	def update_redis(self):
 		pass
 
@@ -108,7 +111,7 @@ class Room:
 		chat_message={}
 		chat_message["proto_type"]= "chat_message"
 		chat_message["sender"]= chatter.get_name()
-		chat_message["message"]= str(Markup.escape(message["message"])).replace("\n","<br />")
+		chat_message["message"]= Markup.escape(message["message"]).encode("utf-8").replace("\n","<br />")
 		chat_message["chat_seq"]= self.chat_seq
 		self.chat_seq+= 1
 		return chat_message
@@ -186,9 +189,6 @@ class Room:
 	def save_chat_mongo(self, message, append= True):
 		if append is True:
 			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-			if room_document is None:
-				room_data={"room_seq":self.room_seq}
-				self.room_collection.insert(room_data)
 			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
 			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
 			if type(chat_log_document) is NoneType:
@@ -215,6 +215,8 @@ class Room:
 		else:
 			mongo_room_id= room_document["_id"]
 			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id})
+			if chat_log_document is None:
+				return []
 			if last_chat is True:
 				return chat_log_document["chat_log"][threshold*-1:]
 			else:

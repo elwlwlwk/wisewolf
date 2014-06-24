@@ -81,3 +81,26 @@ div.popup_content{
 .td_room_participants{
 	width: 150px;
 }
+div.room_info_sidebar{
+	position: fixed;
+	//top: 184px;
+}
+a.btn-outline:hover, .btn-outline:focus, .btn-outline:active{
+	color: #fff;
+	background-color: #428bca;
+	border-color: #428bca;
+}
+a.btn-outline{
+	color: #428bca;
+	background-color: transparent;
+	border-color: #428bca;
+}
+div.info_tags{
+	max-height:150px;
+	overflow-y: auto;
+}
+div.div_main{
+	//position: fixed;
+	//overflow: auto;
+	//width: 100%;
+}
