@@ -88,6 +88,7 @@ require([
 						var td_participants= domConstruct.create("td");
 						td_participants.innerHTML=room_list[seq]["cur_participants"]+ ' / '+ room_list[seq]["max_participants"];
 						domClass.add(td_participants, ["clickable", "td_room_participants", "text-center"]);
+						td_participants.id='td_participants_'+room_list[seq]["key"];
 						tr_room.appendChild(td_participants);
 						
 						tbody_room_list.appendChild(tr_room);
