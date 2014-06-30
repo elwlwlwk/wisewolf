@@ -6,7 +6,7 @@ from wisewolf.websocket.chatting import redis_RoomSession
 
 class TestChattingRoomSession(unittest.TestCase):
 	class mock_redisSession():
-		def __init__(self, name="test_room", value=json.dumps({'test':'test'})):
+		def __init__(self, name="test_room", value=json.dumps({'room_title':'test_room','open_time':'1403913777','room_kind':'generic', 'max_participants':'3'})):
 			self.name=name
 			self.value=value
 
