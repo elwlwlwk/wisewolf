@@ -3,11 +3,9 @@ from flask import render_template, g, request, session, redirect, url_for, make_
 import sqlite3
 from contextlib import closing
 from datetime import timedelta
-import psycopg2
 from redis_session import RedisSessionInterface
 from wisewolf.web import app
-from wisewolf.websocket.chatting import redis_RoomSession
-from wisewolf.websocket import Mongo_Wisewolf
+from wisewolf.db_pool import Mongo_Wisewolf, redis_RoomSession, Psql_Cursor
 import binascii
 import time
 import views
@@ -34,10 +32,7 @@ con= None
 
 @app.before_request
 def before_request():
-	con= psycopg2.connect(database='wisewolf', user='elwlwlwk',\
-password='dlalsrb3!',\
-host='165.194.104.192')
-	g.db= con.cursor()
+	g.db= Psql_Cursor
 	g.mongo= Mongo_Wisewolf
 	try:
 		print request.headers["X-Real-Ip"]+": "+request.headers["Referer"]

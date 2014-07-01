@@ -1,5 +1,5 @@
 from wisewolf.websocket.chatting.Room import Room
-from wisewolf.websocket.chatting import redis_RoomSession
+from wisewolf.db_pool import redis_RoomSession
 
 class ChattingRoomSession:
 	def __init__(self, session= redis_RoomSession):

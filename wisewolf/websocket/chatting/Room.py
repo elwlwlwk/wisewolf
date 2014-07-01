@@ -8,14 +8,7 @@ from flask import Markup
 from types import *
 from operator import itemgetter
 
-from wisewolf.websocket.chatting import redis_RoomSession
-from wisewolf.web import redis_UserSession
-from wisewolf.config import MONGO_AUTHENTICATE
-from redis import Redis
-
-from pymongo import MongoClient
-
-from wisewolf.websocket import Mongo_Wisewolf
+from wisewolf.db_pool import Mongo_Wisewolf, redis_RoomSession, redis_UserSession
 
 class Room:
 	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None):
