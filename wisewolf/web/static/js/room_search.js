@@ -4,9 +4,10 @@ require([
 	"dojo/dom-class",
 	"dojo/on",
 	"dojo/_base/xhr",
+	"dojo/query",
 	"kb/popup",
 	"dojo/domReady!"
-	], function(dom, domConstruct, domClass, on, xhr, popup){
+	], function(dom, domConstruct, domClass, on, xhr, query, popup){
 	
 		function display_tags(tags){
 			var td_info_tags= dom.byId("div_info_tags");
@@ -67,6 +68,7 @@ require([
 						var tbody_room_list= dom.byId("tbody_room_list");
 						
 						var tr_room= domConstruct.create("tr");
+						domClass.add(tr_room, ["tr_room"])
 
 						var td_mark= domConstruct.create("td");
 						domClass.add(td_mark, ["clickable", "text-center"]);
@@ -101,6 +103,9 @@ require([
 		};
 		
 		on(dom.byId("button_room_search"), "click", xhr_send_room_search);
+		on(dom.byId("td_get_more_room"),"click", function(){
+			xhr_send_room_search(query(".tr_room").length+1);
+		});
 		on(input_room_search, "keypress", function(event){
 			if(event.keyCode== 13){
 				xhr_send_room_search(0);
