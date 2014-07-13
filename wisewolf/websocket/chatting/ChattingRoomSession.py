@@ -7,7 +7,7 @@ class ChattingRoomSession:
 		self.redis_conn= session
 
 	def add_room(self, room_seq, room_kind="default"):
-		if self.rooms.has_key(room_seq):
+		if room_seq in self.rooms:
 			return
 		self.rooms[room_seq]= Room(room_seq, session= self.redis_conn)
 			

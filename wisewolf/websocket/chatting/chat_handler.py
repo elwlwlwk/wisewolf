@@ -8,14 +8,14 @@ chatting_room_session= ChattingRoomSession()
 class ChattingHandler(tornado.websocket.WebSocketHandler):
 	def __init__(self, request, spec_kwargs):
 		self.alive= 0
-		self.name= binascii.b2a_hex(os.urandom(2))
+		self.name= binascii.b2a_hex(os.urandom(2)).decode("utf-8")
 		self.my_room= None
 		self.role= 'common'
 		tornado.websocket.WebSocketHandler.__init__(self, request, spec_kwargs)
 		pass
 	def open(self):
 		req_room= self.request.uri.split("/")[3]
-		print "[room enter request] "+self.request.headers["X-Real-Ip"]+" "+self.name+" "+self.request.uri
+		print("[room enter request] "+self.request.headers["X-Real-Ip"]+" "+self.name+" "+self.request.uri)
 		if chatting_room_session.validate_room(req_room):
 			chatting_room_session.add_room(req_room)
 

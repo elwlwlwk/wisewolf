@@ -31,7 +31,7 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
-		self.room_meta= json.loads(self.redis_conn.get(self.room_seq))
+		self.room_meta= json.loads(self.redis_conn.get(self.room_seq).decode("utf-8"))
 		
 		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
 "open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"]}
@@ -46,7 +46,7 @@ class Room:
 		try:
 			if self.room_meta["max_participants"]!= ''and len(self.chatters)>= int(self.room_meta["max_participants"]):
 				chatter.role="observer"
-		except ValueError, e:
+		except ValueError as e:
 			self.room_meta["max_participants"]=''
 		if len(self.chatters) is 0:
 			chatter.role="opper"
@@ -64,7 +64,7 @@ class Room:
 	def send_heartbeat(self):
 		cur_time= int(time())
 		if cur_time- self.heartbeat_time >= 5:
-			self.heartbeat_key= binascii.b2a_hex(urandom(12))
+			self.heartbeat_key= binascii.b2a_hex(urandom(12)).decode("utf-8")
 			heartbeat_msg={}
 			heartbeat_msg["proto_type"]= "heartbeat"
 			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
@@ -85,7 +85,7 @@ class Room:
 	def write_message(self, chatter, message):
 		if message["proto_type"]!= "heartbeat":
 			self.send_heartbeat()
-		if type(chatter.ws_connection) is not NoneType:
+		if type(chatter.ws_connection) is not None:
 			chatter.write_message(json.dumps(message))
 
 	def broadcast(self, message):
@@ -104,7 +104,7 @@ class Room:
 		chat_message={}
 		chat_message["proto_type"]= "chat_message"
 		chat_message["sender"]= chatter.get_name()
-		chat_message["message"]= Markup.escape(message["message"]).encode("utf-8").replace("\n","<br />")
+		chat_message["message"]= Markup.escape(message["message"]).replace("\n","<br />")
 		chat_message["chat_seq"]= self.chat_seq
 		self.chat_seq+= 1
 		return chat_message
@@ -184,7 +184,7 @@ class Room:
 			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
 			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
 			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
-			if type(chat_log_document) is NoneType:
+			if chat_log_document is None:
 				chat_data={"room_id":room_document["_id"], "chat_log":[message]}
 				self.chat_log_collection.insert(chat_data)
 			else:

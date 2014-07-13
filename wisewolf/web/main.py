@@ -3,13 +3,13 @@ from flask import render_template, g, request, session, redirect, url_for, make_
 import sqlite3
 from contextlib import closing
 from datetime import timedelta
-from redis_session import RedisSessionInterface
+from wisewolf.web.redis_session import RedisSessionInterface
 from wisewolf.web import app
 from wisewolf.db_pool import Mongo_Wisewolf, redis_RoomSession, Psql_Cursor
 import binascii
 import time
-import views
-import config
+import wisewolf.web.views as views
+import wisewolf.web.config
 
 from pymongo import MongoClient
 import json
@@ -35,7 +35,7 @@ def before_request():
 	g.db= Psql_Cursor
 	g.mongo= Mongo_Wisewolf
 	try:
-		print request.headers["X-Real-Ip"]+": "+request.headers["Referer"]
+		print(request.headers["X-Real-Ip"]+": "+request.headers["Referer"])
 	except:
 		pass
 
@@ -97,7 +97,7 @@ def get_room_info():
 		result.pop("_id")
 		return json.dumps(result)
 	except Exception as e:
-		print e
+		print(e)
 		return '{}'
 
 @app.route('/get_room_list', methods=['POST'])
@@ -112,14 +112,13 @@ def get_room_list():
 	room_list.sort(reverse= True)
 	result={}
 	result['room_info']=[]
-
 	result_counter=0
-	for key in room_list:
-		if 'support' in key:
+	for key in [x.decode() for x in room_list]:
+		if "support" in key:
 			continue
 		if result_counter>=int(search_request['seq'])+20:
 			break
-		room= json.loads(r.get(key))
+		room= json.loads(r.get(key).decode("utf-8"))
 		if Markup.escape(search_request["keyword"]) in room["room_title"]:
 			result_counter+=1
 			if result_counter>= search_request['seq']:
@@ -139,14 +138,14 @@ def chattingroom(path):
 	if path =='new':
 		if request.method!= 'POST':
 			abort(405)
-		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8))
+		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8)).decode("utf-8")
 		create_new_room(r, room_id, request)
 		return redirect("/chatting/"+room_id)
 	if val is not None:
 		enter_existing_room()
 	else:
 		abort(405)
-	room_info= json.loads(r.get(path))
+	room_info= json.loads(r.get(path).decode("utf-8"))
 	g.room_id=path
 	if room_info["room_kind"]== "generic":
 		return render_template("chatting_room.html")
@@ -183,7 +182,7 @@ def gallery():
 
 @app.route('/videos/<path:path>')
 def videos(path):
-	print path
+	print(path)
 	flash(path)
 	return render_template("video.html") 
 
@@ -215,8 +214,8 @@ def gen_thumb():
 			im.thumbnail(size, Image.ANTIALIAS)
 			im.save('./wisewolf/web/imgs/thumbnail/'+img)
 			os.system('mv ./wisewolf/web/imgs/'+img+' ./wisewolf/web/imgs/thumbgen')
-		except IOError, e:
-			print e	
+		except IOError as e:
+			print(e)
 
 @app.route("/test")
 def hen():
@@ -250,13 +249,13 @@ def popup(path):
 @app.route('/vote', methods=['POST'])
 def vote():
 	room_seq= request.form["tag_room"].replace("#","")
-	if session.has_key('user')!= True:
+	if "user" not in session:
 		try:
 			if 'tags' in g.mongo.rooms.find_one({"room_seq":room_seq}):
 				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 			else:
 				return ''
-		except TypeError, e:
+		except TypeError as e:
 			return ''
 
 	room= g.mongo.rooms.find_one({"room_seq":room_seq})
@@ -284,11 +283,14 @@ def vote():
 			return ''
 		else:# if exist room
 			if len(dest_tag) is not 0:
-				if room.has_key('tags'):# if room already has tag, vote up the tag
+				if 'tags' in room:# if room already has tag, vote up the tag
 					vote_tag("up")
 				else:
 					g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
-			return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
+			try:
+				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
+			except KeyError as e:
+				pass
 	elif request.form['tag_type']== 'vote':
 		dest_tag= request.form['dest_tag'].replace(" ","").strip()
 		vote_tag(request.form['pros_cons'], new_tag= False)

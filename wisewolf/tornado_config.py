@@ -3,7 +3,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.web import FallbackHandler, RequestHandler, Application
 
 from wisewolf.web.main import app
-from websocket.chatting.chat_handler import ChattingHandler
+from wisewolf.websocket.chatting.chat_handler import ChattingHandler
 
 	
 tr= WSGIContainer(app)

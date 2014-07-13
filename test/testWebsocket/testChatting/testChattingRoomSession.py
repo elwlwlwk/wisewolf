@@ -2,7 +2,7 @@ import unittest
 import json
 from wisewolf.websocket.chatting.ChattingRoomSession import ChattingRoomSession
 
-from wisewolf.websocket.chatting import redis_RoomSession
+from wisewolf.db_pool import redis_RoomSession
 
 class TestChattingRoomSession(unittest.TestCase):
 	class mock_redisSession():
@@ -14,7 +14,7 @@ class TestChattingRoomSession(unittest.TestCase):
 			if self.name != name:
 				return None
 			else:
-				return self.value
+				return self.value.encode()
 
 		def set(self, name, value):
 			self.name= name
@@ -32,5 +32,5 @@ class TestChattingRoomSession(unittest.TestCase):
 	
 	def test_add_room(self):
 		self.session.add_room("test_room")
-		self.assertTrue(self.session.rooms.has_key("test_room"))
-		self.assertEquals(self.session.rooms["test_room"].__class__.__name__, "Room")
+		self.assertTrue("test_room" in self.session.rooms)
+		self.assertEqual(self.session.rooms["test_room"].__class__.__name__, "Room")

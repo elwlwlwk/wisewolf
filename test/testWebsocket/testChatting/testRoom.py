@@ -30,7 +30,7 @@ class TestRoom(unittest.TestCase):
 			if self.name!= name:
 				return None
 			else:
-				return self.value
+				return self.value.encode()
 
 		def set(self, name, value):
 			self.name= name
@@ -55,26 +55,26 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		mock_chatter= self.mock_chatter()
 		self.room.add_chatter(mock_chatter)
 		self.assertTrue(mock_chatter in self.room.chatters)
-		self.assertEquals(len(self.room.chatters), 1)
-		self.assertEquals(self.room.chatters[0].role, 'opper')
+		self.assertEqual(len(self.room.chatters), 1)
+		self.assertEqual(self.room.chatters[0].role, 'opper')
 		
 		self.room.add_chatter(self.mock_chatter())
 		self.room.add_chatter(self.mock_chatter())
 		self.room.add_chatter(self.mock_chatter())
-		self.assertEquals(len(self.room.chatters), 4)
-		self.assertEquals(self.room.chatters[0].role, 'opper')
-		self.assertEquals(self.room.chatters[1].role, 'common')
-		self.assertEquals(self.room.chatters[2].role, 'observer')
-		self.assertEquals(self.room.chatters[3].role, 'observer')
+		self.assertEqual(len(self.room.chatters), 4)
+		self.assertEqual(self.room.chatters[0].role, 'opper')
+		self.assertEqual(self.room.chatters[1].role, 'common')
+		self.assertEqual(self.room.chatters[2].role, 'observer')
+		self.assertEqual(self.room.chatters[3].role, 'observer')
 	
 	def test_add_chatter(self):	#testcase for versus room
 		self.room.room_meta['room_kind']="versus"
 		self.room.add_chatter(self.mock_chatter())
 		self.room.add_chatter(self.mock_chatter())
 		self.room.add_chatter(self.mock_chatter())
-		self.assertEquals(self.room.chatters[0].role, 'opper')
-		self.assertEquals(self.room.chatters[1].role, 'common')
-		self.assertEquals(self.room.chatters[2].role, 'observer')
+		self.assertEqual(self.room.chatters[0].role, 'opper')
+		self.assertEqual(self.room.chatters[1].role, 'common')
+		self.assertEqual(self.room.chatters[2].role, 'observer')
 
 	def test_add_waiting_chatter(self):
 		chatter= self.mock_chatter()
@@ -135,21 +135,21 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		self.room.add_chatter(chatter)
 		message={"proto_type":"chat_message","message":"test_message","chat_seq":0}
 		self.room.broadcast(message)
-		self.assertEquals(chatter.message, json.dumps(message))
+		self.assertEqual(chatter.message, json.dumps(message))
 
 		chatter2= self.mock_chatter()
 		self.room.add_chatter(chatter2)
 		message={"proto_type":"chat_message","message":"test_message2","chat_seq":1}
 		self.room.broadcast(message)
-		self.assertEquals(chatter.message, json.dumps(message))
-		self.assertEquals(chatter2.message, json.dumps(message))
+		self.assertEqual(chatter.message, json.dumps(message))
+		self.assertEqual(chatter2.message, json.dumps(message))
 
 	def test_unicast(self):
 		chatter= self.mock_chatter()
 		self.room.add_chatter(chatter)
 		message={"proto_type":"chat_message","message":"test_message","chat_seq":0}
 		self.room.unicast(chatter, message)
-		self.assertEquals(chatter.message, json.dumps(message))
+		self.assertEqual(chatter.message, json.dumps(message))
 	
 		chatter2= self.mock_chatter()
 		self.room.add_chatter(chatter2)
@@ -157,21 +157,21 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		self.room.unicast(chatter2, message2)
 		message3={"proto_type":"chat_message","message":"test_message2-1","chat_seq":3}
 		self.room.unicast(chatter, message3)
-		self.assertEquals(chatter.message, json.dumps(message3))
-		self.assertEquals(chatter2.message, json.dumps(message2))
+		self.assertEqual(chatter.message, json.dumps(message3))
+		self.assertEqual(chatter2.message, json.dumps(message2))
 	
 	def test_remove_chatter(self):
 		chatter= self.mock_chatter()
 		self.room.add_chatter(chatter)
 		self.room.remove_chatter(chatter)
-		self.assertEquals(len(self.room.chatters), 0)
+		self.assertEqual(len(self.room.chatters), 0)
 
 	def test_assemble_chat(self):
 		chatter= self.mock_chatter()
 		test_message= self.room.assemble_chat(chatter, {"message":"test_message"})
 		dest_message={"proto_type":"chat_message", "sender":chatter.get_name(), "message":"test_message",\
 "chat_seq": 1}
-		self.assertEquals(test_message, dest_message)
+		self.assertEqual(test_message, dest_message)
 
 	def test_send_cur_chat_log(self):
 		chatter= self.mock_chatter()
