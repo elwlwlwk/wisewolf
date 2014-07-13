@@ -58,9 +58,24 @@ require([
 			if(seq== 0){
 				dom.byId("tbody_room_list").innerHTML="";
 			}
+			var json_search_mode= function(){
+			  var result={};
+			  var modes= query(".checkbox_search_mode");
+			  for(var mode in modes){
+			    result[modes[mode].value]= modes[mode].checked;
+			  }
+
+			  var modes= query(".radio_search_mode");
+			  for(var mode in modes){
+			    if(modes[mode].checked== true){
+			      result[modes[mode].name]= modes[mode].value;
+				}
+			  }
+			  return JSON.stringify(result);
+			}();
 			var xhrArgs={
 				url: "/get_room_list",
-				postData: JSON.stringify({"keyword":input_room_search.value, "seq":seq}),
+				postData: JSON.stringify({"keyword":input_room_search.value, "seq":seq, "search_mode":json_search_mode}),
 				handleAs: "json",
 				load: function(data){
 					var room_list= data["room_info"];
