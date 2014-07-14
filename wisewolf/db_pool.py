@@ -7,8 +7,8 @@ import psycopg2
 #redis_RoomSession= Redis(db= REDIS_INDEX['chatting_rooms'])
 #redis_UserSession= Redis(db= REDIS_INDEX['user_sessions'])
 
-redis_UserSession= Redis(connection_pool= ConnectionPool(host=DB_HOST, db=REDIS_INDEX['chatting_rooms']))
-redis_RoomSession= Redis(connection_pool= ConnectionPool(host=DB_HOST, db=REDIS_INDEX['user_sessions']))
+redis_UserSession= Redis(connection_pool= ConnectionPool(host=DB_HOST, db=REDIS_INDEX['user_sessions']))
+redis_RoomSession= Redis(connection_pool= ConnectionPool(host=DB_HOST, db=REDIS_INDEX['chatting_rooms']))
 
 Mongo_Wisewolf= MongoClient(host=DB_HOST).wisewolf
 Mongo_Wisewolf.authenticate(MONGO_AUTHENTICATE["id"],MONGO_AUTHENTICATE["passwd"])

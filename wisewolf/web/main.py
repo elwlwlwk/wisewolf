@@ -189,14 +189,14 @@ def videos(path):
 @app.route("/video/<path:path>")
 def vidoe(path):
 	fullpath = "./wisewolf/web/videos/" + path
-	resp = make_response(open(fullpath).read())
+	resp = make_response(open(fullpath,"rb").read())
 	return resp
 
 @app.route("/imgs/<path:path>")
 def images(path):
 	gen_thumb()
 	fullpath = "./wisewolf/web/imgs/" + path
-	resp = make_response(open(fullpath).read())
+	resp = make_response(open(fullpath,"rb").read())
 	resp.content_type = "image/jpeg"
 	return resp
 
@@ -238,7 +238,7 @@ def files():
 def file(path):
 	gen_thumb()
 	fullpath = "./wisewolf/web/file/" + path
-	resp = make_response(open(fullpath).read())
+	resp = make_response(open(fullpath, "rb").read())
 	resp.content_type = "application/octet-stream"
 	return resp
 
@@ -290,7 +290,7 @@ def vote():
 			try:
 				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 			except KeyError as e:
-				pass
+				return ''
 	elif request.form['tag_type']== 'vote':
 		dest_tag= request.form['dest_tag'].replace(" ","").strip()
 		vote_tag(request.form['pros_cons'], new_tag= False)
