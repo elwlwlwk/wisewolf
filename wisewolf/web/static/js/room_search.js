@@ -54,8 +54,8 @@ require([
 		}
 		var xhr_send_room_search= function(seq){
 			dom.byId("room_load_progress").style.visibility="visible";
-			seq= typeof seq !== 'object' ? seq : 0; //Because seq must be number type. When this function call as button event's call-back func, first args comes object of event.
-			if(seq== 0){
+			seq= typeof seq !== 'object' ? seq : 1; //Because seq must be number type. When this function call as button event's call-back func, first args comes object of event.
+			if(seq== 1){
 				dom.byId("tbody_room_list").innerHTML="";
 			}
 			var json_search_mode= function(){
@@ -123,9 +123,9 @@ require([
 		});
 		on(input_room_search, "keypress", function(event){
 			if(event.keyCode== 13){
-				xhr_send_room_search(0);
+				xhr_send_room_search(1);
 			}
 		})
-		xhr_send_room_search(0);
+		xhr_send_room_search(1);
 	}
 )
