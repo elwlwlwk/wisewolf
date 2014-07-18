@@ -202,17 +202,17 @@ class Room:
 			return chat_log[len(chat_log)-1]["chat_seq"]
 	
 	def load_chat_mongo(self, last_index=0, threshold=20, last_chat= False):
-		room_document= self.room_collection.find_one({"room_seq":self.room_seq})
+		room_document= self.room_collection.find_one({"room_seq":self.room_seq},{"_id":1})
 		if room_document is None:
 			return []
 		else:
 			mongo_room_id= room_document["_id"]
-			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id})
+			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id},{"_id":1})
 			if chat_log_document is None:
 				return []
 			if last_chat is True:
-				return chat_log_document["chat_log"][threshold*-1:]
+				return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":threshold*-1}})["chat_log"]
 			else:
 				if last_index-threshold < 0:
-					return chat_log_document["chat_log"][0: last_index-1]
-				return chat_log_document["chat_log"][last_index-threshold:last_index-1]
+					return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":[0, last_index-1]}})["chat_log"]
+				return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":[last_index-threshold-1, threshold]}})["chat_log"]
