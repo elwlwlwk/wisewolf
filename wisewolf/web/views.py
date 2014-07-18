@@ -1,7 +1,7 @@
 from flask.views import View
 from flask import render_template, redirect, url_for, request, session
 
-from wisewolf.web.member import signin_validation
+from wisewolf.web.member import signin_validation, new_member
 
 class RenderTemplateView(View):
 	def __init__(self, template_name):
@@ -36,7 +36,6 @@ class RenderSignout(View):
 class RenderSignup(RenderTemplateView):
 	methods= ['GET', 'POST']
 	def dispatch_request(self):
-		from member import new_member
 		if request.method== 'POST':
 			if new_member(request.form['username'], request.form['password'],\
 request.form['email'])== True:
