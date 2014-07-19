@@ -235,43 +235,48 @@ def vote():
 			return ''
 
 	room= g.mongo.rooms.find_one({"room_seq":room_seq})
-	def vote_tag(pros_cons, new_tag= True):
-		updated= True
-		if new_tag== True:
-			updated= False
-		room_tags= room['tags']
-		for tag in room_tags:
-			if tag['tag']== dest_tag:
-				if pros_cons== "up":
-					tag['up']+=1
-				else:
-					tag['down']+=1
-				updated= True
-				break;
-		if updated== False:
-			room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
-		g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":room_tags}})
+	room_id= g.mongo.rooms.find_one({"room_seq":room_seq},{"_id":1})["_id"]
 
-		pass
 	if request.form['tag_type']== 'new':
 		dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
 		if room is None:
 			return ''
 		else:# if exist room
 			if len(dest_tag) is not 0:
-				if 'tags' in room:# if room already has tag, vote up the tag
-					vote_tag("up")
-				else:
-					g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
+				vote_tag(room_seq, dest_tag, "up")
 			try:
 				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 			except KeyError as e:
 				return ''
 	elif request.form['tag_type']== 'vote':
 		dest_tag= request.form['dest_tag'].replace(" ","").strip()
-		vote_tag(request.form['pros_cons'], new_tag= False)
+		vote_tag(room_seq, dest_tag, request.form['pros_cons'], new_tag= False)
 		return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
 
+def vote_tag(room_seq, dest_tag, pros_cons, new_tag= True):
+	room= g.mongo.rooms.find_one({"room_seq":room_seq})
+	updated= True
+	if new_tag== True:
+		updated= False
+	if 'tags' not in room:
+		g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":[{'tag':dest_tag, 'up':1, 'down':0}]}})
+		return
+	room_tags= room['tags']
+	vote_count=0 #to disable vote_me tag
+	for tag in room_tags:
+		vote_count+= tag['up']+ tag['down']
+		if tag['tag']== dest_tag and tag['tag']!= "tag_me":
+			if pros_cons== "up":
+				tag['up']+=1
+			else:
+				tag['down']+=1
+			updated= True
+	if vote_count>=30 and room_tags[0]["tag"]== "tag_me":
+		poped_tag= room_tags.pop(0)
+			
+	if updated== False:
+		room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
+	g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":room_tags}})
 	
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=6974)
