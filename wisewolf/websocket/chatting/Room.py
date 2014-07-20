@@ -34,7 +34,8 @@ class Room:
 		self.room_meta= json.loads(self.redis_conn.get(self.room_seq).decode("utf-8"))
 		
 		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
-"open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"],"tags":[{"tag":"tag_me","up":0,"down":0}]}
+"open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"],
+"tags":[{"tag":"tag_me","up":0,"down":0}], "voted_members":[]}
 		self.room_collection.insert(room_data)
 
 
