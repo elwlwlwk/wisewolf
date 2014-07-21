@@ -6,6 +6,7 @@ from datetime import timedelta
 from wisewolf.web.redis_session import RedisSessionInterface
 from wisewolf.web import app
 from wisewolf.db_pool import Mongo_Wisewolf, redis_RoomSession, Psql_Cursor
+from wisewolf.web.vote import vote_tag, get_tag_status
 import wisewolf.web.search_room as search_room
 import binascii
 import time
@@ -225,61 +226,20 @@ def popup(path):
 @app.route('/vote', methods=['POST'])
 def vote():
 	room_seq= request.form["tag_room"].replace("#","")
-	if "user" not in session:
-		try:
-			if 'tags' in g.mongo.rooms.find_one({"room_seq":room_seq}):
-				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
-			else:
-				return ''
-		except TypeError as e:
-			return ''
-
-	room= g.mongo.rooms.find_one({"room_seq":room_seq})
-	room_id= g.mongo.rooms.find_one({"room_seq":room_seq},{"_id":1})["_id"]
-
-	if request.form['tag_type']== 'new':
-		dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
-		if room is None:
-			return ''
-		else:# if exist room
+	tag_status={}
+	voted= False
+	if "user" in session:
+		if request.form['tag_type']== 'new':
+			dest_tag= Markup.escape(request.form['dest_tag'].replace(" ","").strip())
 			if len(dest_tag) is not 0:
 				vote_tag(room_seq, dest_tag, "up")
-			try:
-				return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
-			except KeyError as e:
-				return ''
-	elif request.form['tag_type']== 'vote':
-		dest_tag= request.form['dest_tag'].replace(" ","").strip()
-		vote_tag(room_seq, dest_tag, request.form['pros_cons'], new_tag= False)
-		return json.dumps(g.mongo.rooms.find_one({"room_seq":room_seq})['tags'])
+		elif request.form['tag_type']== 'vote':
+			dest_tag= request.form['dest_tag'].replace(" ","").strip()
+			vote_tag(room_seq, dest_tag, request.form['pros_cons'], new_tag= False)
+		tag_status= get_tag_status(room_seq)
+		if session["user"] in tag_status["voted_members"]:
+			voted= True
+	return json.dumps({"tags":tag_status["tags"],"voted":voted})
 
-def vote_tag(room_seq, dest_tag, pros_cons, new_tag= True):
-	room= g.mongo.rooms.find_one({"room_seq":room_seq})
-	voted_members= room["voted_members"]
-	if session["user"] in voted_members:
-		return
-	voted_members.append(session["user"])
-	updated= True
-	if new_tag== True:
-		updated= False
-
-	room_tags= room['tags']
-	vote_count=0 #to disable vote_me tag
-	for tag in room_tags:
-		vote_count+= tag['up']
-		if tag['tag']== dest_tag and tag['tag']!= "tag_me":
-			if pros_cons== "up":
-				tag['up']+=1
-			else:
-				tag['down']+=1
-			updated= True
-	if vote_count>=15 and room_tags[0]["tag"]== "tag_me":
-		poped_tag= room_tags.pop(0)
-			
-	if updated== False:
-		room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
-	g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":room_tags}})
-	g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"voted_members":voted_members}})
-	
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=6974)

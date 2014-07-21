@@ -183,14 +183,12 @@ class Room:
 	def save_chat_mongo(self, message, append= True):
 		if append is True:
 			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]})
+			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]},{"_id":1})
 			if chat_log_document is None:
 				chat_data={"room_id":room_document["_id"], "chat_log":[message]}
 				self.chat_log_collection.insert(chat_data)
 			else:
-				chat_log_document["chat_log"].append(message)
-				self.chat_log_collection.update({"room_id":room_document["_id"]},{"$set":{"chat_log":chat_log_document["chat_log"]}})
+				self.chat_log_collection.update({"room_id":room_document["_id"]},{"$addToSet":{"chat_log":message}})
 		else:
 			pass
 	
