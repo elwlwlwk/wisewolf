@@ -2,30 +2,37 @@ from flask import g, session
 def vote_tag(room_seq, dest_tag, pros_cons, new_tag= True):
 	room= g.mongo.rooms.find_one({"room_seq":room_seq})
 	voted_members= room["voted_members"]
-	if session["user"] in voted_members:
+	if dest_tag== "tag_me" or session["user"] in voted_members:
 		return
-	voted_members.append(session["user"])
-	updated= True
-	if new_tag== True:
-		updated= False
-
-	room_tags= room['tags']
-	vote_count=0 #to disable vote_me tag
-	for tag in room_tags:
-		vote_count+= tag['up']
-		if tag['tag']== dest_tag and tag['tag']!= "tag_me":
-			if pros_cons== "up":
-				tag['up']+=1
-			else:
-				tag['down']+=1
-			updated= True
-	if vote_count>=15 and room_tags[0]["tag"]== "tag_me":
-		poped_tag= room_tags.pop(0)
-			
-	if updated== False:
-		room_tags.append({'tag':dest_tag, 'up':1, 'down':0})
-	g.mongo.rooms.update({"room_seq":room_seq},{"$set":{"tags":room_tags,"voted_members":voted_members}})
+	room= g.mongo.rooms.find_one({"room_seq":room_seq})
+	tag= g.mongo.tags.find_one({"tag":dest_tag})
+	if tag is None:
+		g.mongo.tags.insert({"tag":dest_tag,"room_list":[{"room_seq":room_seq, "up":1, "down":0}]})
+	else:
+		vote_list= tag["room_list"]
+		room_exists= False
+		for vote in vote_list:
+			if vote["room_seq"]== room_seq:
+				vote[pros_cons]+= 1
+				room_exists= True
+				break
+		if room_exists== True:
+			g.mongo.tags.update({"tag":dest_tag},{"$set":{"room_list":vote_list}})
+		else:	
+			g.mongo.tags.update({"tag":dest_tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":1, "down":0}}})
+	g.mongo.rooms.update({"room_seq":room_seq},{"$addToSet":{"voted_members":session["user"]}})
 
 def get_tag_status(room_seq):
-	room= g.mongo.rooms.find_one({"room_seq":room_seq})
-	return room
+	result={}
+	result["tags"]=[]
+	try:
+		result["voted_members"]= g.mongo.rooms.find_one({"room_seq":room_seq},{"voted_members":1})["voted_members"]
+	except Exception as e:
+		result["voted_members"]=[]
+	tags= g.mongo.tags.find({"room_list.room_seq":room_seq})
+	for tag in tags:
+		for vote in tag["room_list"]:
+			if vote["room_seq"]== room_seq:
+				result["tags"].append({"tag":tag["tag"],"up":vote["up"],"down":vote["down"]})
+				break
+	return result

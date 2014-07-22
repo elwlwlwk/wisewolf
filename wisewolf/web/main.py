@@ -143,6 +143,8 @@ def create_new_room(r, room_id, request):
 	room_info={"room_kind":request.form["room_kind"], "room_title":Markup.escape(request.form["title"]),
 "max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+	if g.mongo.tags.update({"tag":"tag_me"},{"$addToSet":{"room_list":{"room_seq":room_id, "up":0, "down":0}}})["updatedExisting"]== False:
+		g.mongo.tags.insert({"tag":"tag_me", "room_list":[{"room_seq":room_id, "up":0, "down":0}]})
 	if request.form["room_kind"]== "versus":
 		room_info["room_kind"]="versus_supportA"
 		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
@@ -236,9 +238,9 @@ def vote():
 		elif request.form['tag_type']== 'vote':
 			dest_tag= request.form['dest_tag'].replace(" ","").strip()
 			vote_tag(room_seq, dest_tag, request.form['pros_cons'], new_tag= False)
-		tag_status= get_tag_status(room_seq)
-		if session["user"] in tag_status["voted_members"]:
-			voted= True
+	tag_status= get_tag_status(room_seq)
+	if "user" in session and session["user"] in tag_status["voted_members"]:
+		voted= True
 	return json.dumps({"tags":tag_status["tags"],"voted":voted})
 
 if __name__ == '__main__':
