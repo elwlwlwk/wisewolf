@@ -305,7 +305,7 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 		for message in messages:
 			self.room.save_chat_mongo(message)
 
-		self.assertEqual(self.room.load_chat_mongo(30,threshold=20), messages[10:29])
+		self.assertEqual(self.room.load_chat_mongo(30,threshold=20), messages[9:29])
 	
 	def test_set_role(self):
 		mock_chatter=self.mock_chatter()
