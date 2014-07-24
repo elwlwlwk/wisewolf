@@ -93,10 +93,21 @@ def room_search():
 def get_room_info():
 	try:
 		info_request= request.get_json(force=True)
-		result= g.mongo.rooms.find_one({"room_seq":info_request["room_seq"]})
+
+		req_room_seq= info_request["room_seq"]
+		result= g.mongo.rooms.find_one({"room_seq":req_room_seq})
+
+		tag_list= g.mongo.tags.find({"room_list.room_seq": req_room_seq})
+		tags=[]
+		for tag in tag_list:
+			for room in tag["room_list"]:
+				if room["room_seq"]== req_room_seq:
+					tags.append({"tag":tag["tag"],"up":room["up"],"down":room["down"]})
+
 		if result is None:
 			return '{}'
 		result.pop("_id")
+		result["tags"]= tags
 		return json.dumps(result)
 	except Exception as e:
 		print(e)

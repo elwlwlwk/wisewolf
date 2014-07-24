@@ -61,4 +61,4 @@ def get_list_from_mongo(keyword, search_mode, req_seq):
 	room_seq_list=[]
 	for room in room_list:
 		room_seq_list.append(room["room_seq"])
-	return Mongo_Wisewolf.rooms.find({"room_seq":{"$in":room_seq_list}})
+	return Mongo_Wisewolf.rooms.find({"room_seq":{"$in":room_seq_list}}).sort("_id",-1).skip(req_seq).limit(20)
