@@ -9,13 +9,20 @@
   <h2>Browse Room</h2>
   <table class="table">
     <tr>
+	  <td class="col-xs-2">
+	    Search By:
+	  </td>
 	  <td>
 	    <label class="radio-inline">
-		  <input type="radio" name="search_by" class="radio_search_mode" value="title" checked>by Title</input>
+		  <input type="radio" name="search_by" class="radio_search_mode" value="title" checked>Title</input>
 		</label>
 		<label class="radio-inline">
-		  <input type="radio" name="search_by" class="radio_search_mode" value="tag">by Tag</input>
+		  <input type="radio" name="search_by" class="radio_search_mode" value="tag">Tag</input>
 		</label>
+	  </td>
+	</tr>
+	<tr>
+	  <td colspan="2">
 	    <div class="input-group col-md-3 col-sm-4 col-xs-6">
           <input id="input_room_search" class="form-control" placeholder="Enter keyword"></input>
 		  <span class="input-group-btn">

@@ -31,12 +31,13 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
-		self.room_meta= json.loads(self.redis_conn.get(self.room_seq).decode("utf-8"))
-		
+		#self.room_meta= json.loads(self.redis_conn.get(self.room_seq).decode("utf-8"))
+		self.room_meta= self.room_collection.find_one({"room_seq":self.room_seq})
+
 		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
 "open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"],
 "voted_members":[]}
-		self.room_collection.insert(room_data)
+		#self.room_collection.insert(room_data)
 
 
 	def add_waiting_chatter(self, chatter):

@@ -121,7 +121,7 @@ def get_room_list():
 def chattingroom(path):
 #	print "path: "+path
 	r= redis_RoomSession
-	val= r.get(path)
+	val= g.mongo.rooms.find_one({"room_seq":path},{"_id":1, "room_kind":1})
 
 	if path =='new':
 		if request.method!= 'POST':
@@ -133,11 +133,10 @@ def chattingroom(path):
 		enter_existing_room()
 	else:
 		abort(405)
-	room_info= json.loads(r.get(path).decode("utf-8"))
 	g.room_id=path
-	if room_info["room_kind"]== "generic":
+	if val["room_kind"]== "generic":
 		return render_template("chatting_room.html")
-	elif room_info["room_kind"]== "versus":
+	elif val["room_kind"]== "versus":
 		return render_template("versuschat.html")
 	else:
 		abort(501)
@@ -154,6 +153,13 @@ def create_new_room(r, room_id, request):
 	room_info={"room_kind":request.form["room_kind"], "room_title":Markup.escape(request.form["title"]),
 "max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
 	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
+	
+	room_data={"room_seq":room_id, "room_title": room_info["room_title"], "room_kind": room_info["room_kind"],
+"open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
+"voted_members":[]}
+	g.mongo.rooms.insert(room_data)
+
+	print("create new room")
 	if g.mongo.tags.update({"tag":"tag_me"},{"$addToSet":{"room_list":{"room_seq":room_id, "up":0, "down":0}}})["updatedExisting"]== False:
 		g.mongo.tags.insert({"tag":"tag_me", "room_list":[{"room_seq":room_id, "up":0, "down":0}]})
 	if request.form["room_kind"]== "versus":
@@ -169,6 +175,14 @@ def gallery():
 	for img in img_list:
 		flash(img)
 	return render_template("gallery.html") 
+
+@app.route('/secrete_gall')
+def secrete_gallery():
+	encrypt_image()
+	img_list= os.listdir('./wisewolf/web/encrypt_imgs')
+	for img in img_list:
+		flash(img)
+	return render_template("secrete_gall.html") 
 
 @app.route('/videos/<path:path>')
 def videos(path):
@@ -190,6 +204,14 @@ def images(path):
 	resp.content_type = "image/jpeg"
 	return resp
 
+@app.route("/encrypt_imgs/<path:path>")
+def encrypt_images(path):
+	encrypt_image()
+	fullpath = "./wisewolf/web/encrypt_imgs/" + path
+	resp = make_response(open(fullpath,"rb").read())
+	resp.content_type = "text/html"
+	return resp
+
 def gen_thumb():
 	from PIL import Image
 	img_list= os.listdir('./wisewolf/web/imgs')
@@ -206,6 +228,47 @@ def gen_thumb():
 			os.system('mv ./wisewolf/web/imgs/'+img+' ./wisewolf/web/imgs/thumbgen')
 		except IOError as e:
 			print(e)
+
+def encrypt_image():
+	os.chdir("./wisewolf/web/encrypt_imgs")
+	file_list= os.listdir(".")
+	base_list=[]
+	
+	for f in file_list:
+		if "html" in f:
+			continue	
+		base_list.append(f.split(".")[0]+".base")
+		os.system("base64 "+f+" > "+f.split(".")[0]+".base")
+		os.system("rm "+f)
+	print(base_list)
+	
+	for b in base_list:
+		f= open(b,'r')
+		print("")
+		try:
+			key= session["user"]
+		except Exception as e:
+			key= ""
+		
+		code="<script>var key='"+key+"'</script><img src=\"data:image/png;base64,"
+		code+= f.read()
+		#code= code.replace("T","TrixlnxSegEzusp")
+		#code= code.replace("YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg","TriWA0R1F3YVneri")
+		#code= code.replace("YGBg","TefisEfaVBxSe4Wgdj25E")
+		#code= code.replace("+","gE4sZetEwgdDFsfo36Sef")
+		#code= code.replace("AwMD","gE4sZetweoZvn6Sef")
+		#code= code.replace("9j","eWixE2ovZoskeWfel")
+		#code= code.replace("A","EwgAevZsbdEhseeAW35")
+		#code= code.replace("e", "eagHweZsee44w6E")
+		#code= code.replace("Ew","EhwBe8hTdb2ReyS")
+		code+="\" />"
+		newf= open(b.split(".")[0]+".html","w")
+		newf.write(code)
+		f.close()
+		newf.close()
+
+	os.system("rm *.base")
+	os.chdir("../../..")
 
 @app.route("/test")
 def hen():
@@ -225,7 +288,7 @@ def files():
 	return render_template("files.html") 
 
 @app.route("/file/<path:path>")
-def file(path):
+def file_down(path):
 	gen_thumb()
 	fullpath = "./wisewolf/web/file/" + path
 	resp = make_response(open(fullpath, "rb").read())

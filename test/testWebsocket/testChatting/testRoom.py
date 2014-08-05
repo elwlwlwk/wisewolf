@@ -43,6 +43,9 @@ class TestRoom(unittest.TestCase):
 		self.room_collection= db.rooms
 		self.chat_log_collection= db.chat_log
 
+		room_data={"room_seq":"test_room", "room_title":"test_room", "room_kind":"generic","open_time":"1403913777","max_participants":3}
+		self.room_collection.insert(room_data)
+
 		self.redis_conn= self.mock_redisSession()
 		self.room= Room("test_room", session= self.redis_conn,\
 room_collection= self.room_collection, chat_log_collection= self.chat_log_collection)
