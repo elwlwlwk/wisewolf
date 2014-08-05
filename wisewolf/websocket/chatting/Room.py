@@ -16,6 +16,7 @@ class Room:
 		self.chatters=[]
 		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
+		self.out_dated=False
 		db=Mongo_Wisewolf
 
 		if room_collection is None:
@@ -36,7 +37,7 @@ class Room:
 
 		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
 "open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"],
-"voted_members":[]}
+"voted_members":[],"out_dated":False}
 		#self.room_collection.insert(room_data)
 
 
@@ -145,7 +146,8 @@ class Room:
 			self.handle_first_handshake(chatter, loaded_msg["user_id"])
 	
 	def chat_handler(self, chatter, message):
-		if chatter.role in ['observer']:
+		#print(self.room_meta["out_dated"])
+		if chatter.role in ['observer'] or self.room_meta["out_dated"]== True:
 			return
 		self.broadcast_chat(chatter, message)
 	

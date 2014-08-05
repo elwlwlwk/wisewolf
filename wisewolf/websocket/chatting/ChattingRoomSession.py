@@ -17,11 +17,16 @@ class ChattingRoomSession:
 		#prefix= "chat_room:"
 		r= self.redis_conn
 		val= r.get(req_room)
+
 		if val is None:
 			room= Mongo_Wisewolf.rooms.find_one({"room_seq":req_room},{"_id":1})
 			if room is None:
 				return False
 			Mongo_Wisewolf.rooms.update({"room_seq":req_room},{"$set":{"out_dated":True}})
+			try:
+				self.rooms[req_room].room_meta["out_dated"]= True
+			except Exception as e:
+				pass
 			return True
 		else:
 			return True
