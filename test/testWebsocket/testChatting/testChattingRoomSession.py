@@ -5,24 +5,11 @@ from wisewolf.websocket.chatting.ChattingRoomSession import ChattingRoomSession
 from wisewolf.db_pool import redis_RoomSession
 from pymongo import MongoClient
 
+from test.mock import mock_redisSession
+
 class TestChattingRoomSession(unittest.TestCase):
-	class mock_redisSession():
-		def __init__(self, name="test_room", value=json.dumps({'room_title':'test_room','open_time':'1403913777','room_kind':'generic', 'max_participants':'3'})):
-			self.name=name
-			self.value=value
-
-		def get(self, name):
-			if self.name != name:
-				return None
-			else:
-				return self.value.encode()
-
-		def set(self, name, value):
-			self.name= name
-			self.value= value
-
 	def setUp(self):
-		self.redis_conn= self.mock_redisSession()
+		self.redis_conn= mock_redisSession()
 
 		client= MongoClient()
 		db= client.test_wisewolf
