@@ -16,7 +16,6 @@ class Room:
 		self.chatters=[]
 		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
-		self.out_dated=False
 		db=Mongo_Wisewolf
 
 		if room_collection is None:
@@ -32,14 +31,10 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
-		#self.room_meta= json.loads(self.redis_conn.get(self.room_seq).decode("utf-8"))
 		self.room_meta= self.room_collection.find_one({"room_seq":self.room_seq})
-
-		room_data={"room_seq":self.room_seq, "room_title": self.room_meta["room_title"], "room_kind": self.room_meta["room_kind"],
-"open_time": self.room_meta["open_time"], "max_participants": self.room_meta["max_participants"],
-"voted_members":[],"out_dated":False}
-		#self.room_collection.insert(room_data)
-
+	
+	def outdate(self):
+		self.room_meta["out_dated"]= True
 
 	def add_waiting_chatter(self, chatter):
 		chatter.set_my_room(self)
@@ -48,6 +43,8 @@ class Room:
 	def add_chatter(self, chatter):
 		try:
 			if self.room_meta["max_participants"]!= ''and len(self.chatters)>= int(self.room_meta["max_participants"]):
+				chatter.role="observer"
+			if self.room_meta["out_dated"]== True:
 				chatter.role="observer"
 		except ValueError as e:
 			self.room_meta["max_participants"]=''
@@ -73,19 +70,19 @@ class Room:
 			heartbeat_msg["heartbeat_key"]= self.heartbeat_key
 			for chatter in self.chatters:
 				if chatter.alive== -2:
-					#print "[timeout] "+chatter.request.headers["X-Real-Ip"]+" "+chatter.name
+					#print("[timeout] "+chatter.request.headers["X-Real-Ip"]+" "+chatter.name)
 					self.remove_chatter(chatter)
 					chatter.close()
 				else:
 					chatter.alive-= 1
-					self.write_message(chatter, heartbeat_msg)
+					self.unicast(chatter, heartbeat_msg)
 			self.heartbeat_time= cur_time
 
 	def heartbeat_handler(self, chatter, message):
 		if message["heartbeat_key"]== self.heartbeat_key:
 			chatter.alive= 0
 	
-	def write_message(self, chatter, message):
+	def unicast(self, chatter, message):
 		if message["proto_type"]!= "heartbeat":
 			self.send_heartbeat()
 		if type(chatter.ws_connection) is not None:
@@ -93,12 +90,8 @@ class Room:
 
 	def broadcast(self, message):
 		for chatter in self.chatters:
-			self.write_message(chatter, message)
+			self.unicast(chatter, message)
 	
-	def unicast(self, chatter, message):
-		if chatter in self.chatters:
-			self.write_message(chatter, message)
-
 	def remove_chatter(self, chatter):
 		self.chatters.remove(chatter)
 		self.broadcast_room_stat()
@@ -146,7 +139,6 @@ class Room:
 			self.handle_first_handshake(chatter, loaded_msg["user_id"])
 	
 	def chat_handler(self, chatter, message):
-		#print(self.room_meta["out_dated"])
 		if chatter.role in ['observer'] or self.room_meta["out_dated"]== True:
 			return
 		self.broadcast_chat(chatter, message)

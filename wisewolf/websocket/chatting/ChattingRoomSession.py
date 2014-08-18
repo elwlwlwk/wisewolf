@@ -10,8 +10,9 @@ class ChattingRoomSession:
 
 	def add_room(self, room_seq, room_kind="default", session=redis_RoomSession, ):
 		if room_seq in self.rooms:
-			return
+			return False
 		self.rooms[room_seq]= Room(room_seq, self.redis_conn, self.room_collection, self.chat_log_collection )
+		return True
 			
 	def validate_room(self, req_room):
 		#prefix= "chat_room:"
@@ -22,15 +23,15 @@ class ChattingRoomSession:
 			room= Mongo_Wisewolf.rooms.find_one({"room_seq":req_room},{"_id":1})
 			if room is None:
 				return False
-			Mongo_Wisewolf.rooms.update({"room_seq":req_room},{"$set":{"out_dated":True}})
-			try:
-				self.rooms[req_room].room_meta["out_dated"]= True
-			except Exception as e:
-				pass
-			return True
-		else:
-			return True
+			self.outdate_room(req_room)
+		return True
 	
 	def get_room(self, room_seq):
 		return self.rooms[room_seq]
 
+	def outdate_room(self, req_room):
+		Mongo_Wisewolf.rooms.update({"room_seq":req_room},{"$set":{"out_dated":True}})
+		try:
+			self.rooms[req_room].outdate()
+		except KeyError as e:#error may raise when ChattingRoomSession.rooms has no req_room as key.
+			pass

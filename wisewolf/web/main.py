@@ -129,9 +129,7 @@ def chattingroom(path):
 		room_id= str(int(time.time()))+binascii.b2a_hex(os.urandom(8)).decode("utf-8")
 		create_new_room(r, room_id, request)
 		return redirect("/chatting/"+room_id)
-	if val is not None:
-		enter_existing_room()
-	else:
+	if val is None:
 		abort(405)
 	g.room_id=path
 	if val["room_kind"]== "generic":
@@ -140,9 +138,6 @@ def chattingroom(path):
 		return render_template("versuschat.html")
 	else:
 		abort(501)
-
-def enter_existing_room():
-	pass
 
 def create_new_room(r, room_id, request):
 	max_participants= request.form["participants"]
@@ -156,10 +151,9 @@ def create_new_room(r, room_id, request):
 	
 	room_data={"room_seq":room_id, "room_title": room_info["room_title"], "room_kind": room_info["room_kind"],
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
-"voted_members":[]}
+"voted_members":[], "out_dated":False}
 	g.mongo.rooms.insert(room_data)
 
-	print("create new room")
 	if g.mongo.tags.update({"tag":"tag_me"},{"$addToSet":{"room_list":{"room_seq":room_id, "up":0, "down":0}}})["updatedExisting"]== False:
 		g.mongo.tags.insert({"tag":"tag_me", "room_list":[{"room_seq":room_id, "up":0, "down":0}]})
 	if request.form["room_kind"]== "versus":
