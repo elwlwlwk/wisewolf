@@ -31,7 +31,7 @@ class ChattingRoomSession:
 
 	def outdate_room(self, req_room):
 		Mongo_Wisewolf.rooms.update({"room_seq":req_room},{"$set":{"out_dated":True}})
-		try:
+		try:#error may raise when ChattingRoomSession.rooms has no req_room as key.
 			self.rooms[req_room].outdate()
-		except KeyError as e:#error may raise when ChattingRoomSession.rooms has no req_room as key.
+		except KeyError as e:
 			pass

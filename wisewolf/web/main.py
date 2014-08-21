@@ -121,7 +121,7 @@ def get_room_list():
 def chattingroom(path):
 #	print "path: "+path
 	r= redis_RoomSession
-	val= g.mongo.rooms.find_one({"room_seq":path},{"_id":1, "room_kind":1})
+	val= g.mongo.rooms.find_one({"room_seq":path})
 
 	if path =='new':
 		if request.method!= 'POST':
@@ -132,6 +132,7 @@ def chattingroom(path):
 	if val is None:
 		abort(405)
 	g.room_id=path
+	g.room_meta=val
 	if val["room_kind"]== "generic":
 		return render_template("chatting_room.html")
 	elif val["room_kind"]== "versus":
