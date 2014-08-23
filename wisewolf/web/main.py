@@ -12,6 +12,7 @@ import binascii
 import time
 import wisewolf.web.views as views
 import wisewolf.web.config
+from wisewolf.common.room_validate import validate_room 
 
 from pymongo import MongoClient
 import json
@@ -132,7 +133,7 @@ def chattingroom(path):
 	if val is None:
 		abort(405)
 	g.room_id=path
-	g.room_meta=val
+	g.room_validation= validate_room(path)
 	if val["room_kind"]== "generic":
 		return render_template("chatting_room.html")
 	elif val["room_kind"]== "versus":

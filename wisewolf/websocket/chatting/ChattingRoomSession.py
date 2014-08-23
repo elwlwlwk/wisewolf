@@ -1,5 +1,6 @@
 from wisewolf.websocket.chatting.Room import Room
 from wisewolf.db_pool import redis_RoomSession, Mongo_Wisewolf
+from wisewolf.common.room_validate import is_outdated, validate_room
 
 class ChattingRoomSession:
 	def __init__(self, session= redis_RoomSession, room_collection= Mongo_Wisewolf.rooms, chat_log_collection= Mongo_Wisewolf.chat_log):
@@ -14,24 +15,23 @@ class ChattingRoomSession:
 		self.rooms[room_seq]= Room(room_seq, self.redis_conn, self.room_collection, self.chat_log_collection )
 		return True
 			
-	def validate_room(self, req_room):
-		#prefix= "chat_room:"
-		r= self.redis_conn
-		val= r.get(req_room)
-
-		if val is None:
-			room= Mongo_Wisewolf.rooms.find_one({"room_seq":req_room},{"_id":1})
-			if room is None:
+	def validate_room(self, room_seq):
+		room_status= validate_room(room_seq, self.redis_conn, self.room_collection)
+		try:
+			if room_status["invalid_room"] is True:
 				return False
-			self.outdate_room(req_room)
+			elif room_status["outdated"] is True:
+				self.outdate_room(room_seq)
+		except KeyError as e:
+			return False
 		return True
-	
+
 	def get_room(self, room_seq):
 		return self.rooms[room_seq]
 
-	def outdate_room(self, req_room):
-		Mongo_Wisewolf.rooms.update({"room_seq":req_room},{"$set":{"out_dated":True}})
-		try:#error may raise when ChattingRoomSession.rooms has no req_room as key.
-			self.rooms[req_room].outdate()
+	def outdate_room(self, room_seq):
+		Mongo_Wisewolf.rooms.update({"room_seq":room_seq},{"$set":{"out_dated":True}})
+		try:#error may raise when ChattingRoomSession.rooms has no room_seq as key.
+			self.rooms[room_seq].outdate()
 		except KeyError as e:
 			pass

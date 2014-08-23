@@ -12,7 +12,7 @@
     <div class="chat_log col-md-10" id="chat_log_{{ g.room_id }}" tabindex="1" style="overflow-y:scroll;width:85%">
     </div>
     <div class="">
-{% if not g.room_meta["out_dated"] %}
+{% if not g.room_validation["outdated"] %}
       <textarea class="form-control chat_to_send" id="chat_to_send_{{ g.room_id }}" rows="3" style="float:left; width:85%"></textarea>
       <button class="btn btn-primary" style="width:15%; height:90px;" id="send_button_{{ g.room_id }}">Send</button>
 {% else %}

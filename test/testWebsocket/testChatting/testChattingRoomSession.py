@@ -30,6 +30,9 @@ class TestChattingRoomSession(unittest.TestCase):
 		self.assertFalse(self.session.validate_room("not_valid_room"))
 		
 		self.redis_conn.set("valid_room_for_test", '')
+		room_data={"room_seq":"valid_room_for_test", "room_title":"test_room", "room_kind":"generic","open_time":"1403913777","max_participants":3, "out_dated":False}
+		self.room_collection.insert(room_data)
+
 		self.assertTrue(self.session.validate_room("valid_room_for_test"))
 	
 	def test_add_room(self):

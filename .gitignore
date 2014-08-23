@@ -3,6 +3,7 @@ venv
 *.swp
 *.base
 imgs
+tags
 wisewolf/web/static/js/dojo
 wisewolf/web/static/js/dijit
 wisewolf/web/static/js/dojox
