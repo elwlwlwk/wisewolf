@@ -47,6 +47,7 @@ class Room:
 			if self.room_meta["out_dated"]== True:
 				chatter.role="observer"
 		except ValueError as e:
+			print("ValueError: Room.Room.add_chatter:",e)
 			self.room_meta["max_participants"]=''
 		if len(self.chatters) is 0:
 			chatter.role="opper"

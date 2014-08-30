@@ -1,6 +1,6 @@
 from wisewolf.websocket.chatting.Room import Room
 from wisewolf.db_pool import redis_RoomSession, Mongo_Wisewolf
-from wisewolf.common.room_validate import is_outdated, validate_room
+from wisewolf.common import Room_Validator
 
 class ChattingRoomSession:
 	def __init__(self, session= redis_RoomSession, room_collection= Mongo_Wisewolf.rooms, chat_log_collection= Mongo_Wisewolf.chat_log):
@@ -16,13 +16,14 @@ class ChattingRoomSession:
 		return True
 			
 	def validate_room(self, room_seq):
-		room_status= validate_room(room_seq, self.redis_conn, self.room_collection)
+		room_status= Room_Validator.validate_room(room_seq, self.redis_conn, self.room_collection)
 		try:
 			if room_status["invalid_room"] is True:
-				return False
+				raise Exception("accessing invalid_room")
 			elif room_status["outdated"] is True:
 				self.outdate_room(room_seq)
-		except KeyError as e:
+		except Exception as e:
+			print("Exception: ChattingRoomSession.ChattingRoomSession.validate_room:",e)
 			return False
 		return True
 

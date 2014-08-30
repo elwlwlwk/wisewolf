@@ -12,7 +12,7 @@ import binascii
 import time
 import wisewolf.web.views as views
 import wisewolf.web.config
-from wisewolf.common.room_validate import validate_room 
+from wisewolf.common import Room_Validator
 
 from pymongo import MongoClient
 import json
@@ -39,7 +39,8 @@ def before_request():
 	g.mongo= Mongo_Wisewolf
 	try:
 		print(request.headers["X-Real-Ip"]+": "+request.headers["Referer"])
-	except:
+	except Exception as e:
+		print("Exception: main.before_request:",e)
 		pass
 
 # disconnect database
@@ -111,7 +112,7 @@ def get_room_info():
 		result["tags"]= tags
 		return json.dumps(result)
 	except Exception as e:
-		print(e)
+		print("Exception: main.get_room_info:",e)
 		return '{}'
 
 @app.route('/get_room_list', methods=['POST'])
@@ -133,7 +134,7 @@ def chattingroom(path):
 	if val is None:
 		abort(405)
 	g.room_id=path
-	g.room_validation= validate_room(path)
+	g.room_validation= Room_Validator.validate_room(path)
 	if val["room_kind"]== "generic":
 		return render_template("chatting_room.html")
 	elif val["room_kind"]== "versus":
@@ -145,7 +146,8 @@ def create_new_room(r, room_id, request):
 	max_participants= request.form["participants"]
 	try:
 		max_participants= int(max_participants)
-	except:
+	except Exception as e:
+		print("Exception: main.create_new_room:",e)
 		max_participants= ''
 	room_info={"room_kind":request.form["room_kind"], "room_title":Markup.escape(request.form["title"]),
 "max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
@@ -159,6 +161,14 @@ def create_new_room(r, room_id, request):
 	if g.mongo.tags.update({"tag":"tag_me"},{"$addToSet":{"room_list":{"room_seq":room_id, "up":0, "down":0}}})["updatedExisting"]== False:
 		g.mongo.tags.insert({"tag":"tag_me", "room_list":[{"room_seq":room_id, "up":0, "down":0}]})
 	if request.form["room_kind"]== "versus":
+		room_data={"room_seq":room_id+"_supportA", "room_title": "", "room_kind": room_info["room_kind"],
+"open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
+"voted_members":[], "out_dated":False}
+		g.mongo.rooms.insert(room_data)
+		room_data={"room_seq":room_id+"_supportB", "room_title": "", "room_kind": room_info["room_kind"],
+"open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
+"voted_members":[], "out_dated":False}
+		g.mongo.rooms.insert(room_data)
 		room_info["room_kind"]="versus_supportA"
 		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 		room_info["room_kind"]="versus_supportB"
@@ -195,7 +205,7 @@ def gen_thumb():
 			im.save('./wisewolf/web/imgs/thumbnail/'+img)
 			os.system('mv ./wisewolf/web/imgs/'+img+' ./wisewolf/web/imgs/thumbgen')
 		except IOError as e:
-			print(e)
+			print("IOError: main.gen_thumb:",e)
 
 @app.route("/files")
 def files():
