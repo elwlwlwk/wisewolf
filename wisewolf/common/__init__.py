@@ -1,3 +1,5 @@
-from wisewolf.common.room_validate import room_validator
+from wisewolf.common.RoomValidator import RoomValidator
+from wisewolf.common.MongoDao import MongoDao
 
-Room_Validator= room_validator()
+Room_Validator= RoomValidator()
+MongoDao= MongoDao()

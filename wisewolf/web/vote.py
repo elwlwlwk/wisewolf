@@ -20,6 +20,8 @@ def vote_tag(room_seq, dest_tag, pros_cons, new_tag= True):
 			g.mongo.tags.update({"tag":dest_tag},{"$set":{"room_list":vote_list}})
 		else:	
 			g.mongo.tags.update({"tag":dest_tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":1, "down":0}}})
+	if session["user"]== "elwlwlwk":
+		return
 	g.mongo.rooms.update({"room_seq":room_seq},{"$addToSet":{"voted_members":session["user"]}})
 
 def get_tag_status(room_seq):

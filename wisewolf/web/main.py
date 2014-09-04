@@ -151,7 +151,6 @@ def create_new_room(r, room_id, request):
 		max_participants= ''
 	room_info={"room_kind":request.form["room_kind"], "room_title":Markup.escape(request.form["title"]),
 "max_participants":max_participants, "cur_participants":0, "open_time":str(time.time())}
-	r.setex(room_id, json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 	
 	room_data={"room_seq":room_id, "room_title": room_info["room_title"], "room_kind": room_info["room_kind"],
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
@@ -169,10 +168,6 @@ def create_new_room(r, room_id, request):
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
 "voted_members":[], "out_dated":False}
 		g.mongo.rooms.insert(room_data)
-		room_info["room_kind"]="versus_supportA"
-		r.setex(room_id+"_supportA", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
-		room_info["room_kind"]="versus_supportB"
-		r.setex(room_id+"_supportB", json.dumps(room_info), int(CHATTING_ROOM_EXPIRE.total_seconds()))
 
 @app.route('/gallery')
 def gallery():

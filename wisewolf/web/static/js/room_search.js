@@ -126,6 +126,15 @@ require([
 				xhr_send_room_search(1);
 			}
 		})
+		on(dom.byId("radio_search_title"), "change", function(event){
+			dom.byId("radio_order_vote").disabled= true;
+			if(dom.byId("radio_order_vote").checked== true){
+				dom.byId("radio_order_time").checked= true;
+			}
+		})
+		on(dom.byId("radio_search_tag"), "change", function(event){
+			dom.byId("radio_order_vote").disabled= false;
+		})
 		xhr_send_room_search(1);
 	}
 )

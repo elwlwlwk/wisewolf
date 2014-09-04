@@ -1,4 +1,5 @@
 from wisewolf.db_pool import redis_RoomSession, Mongo_Wisewolf
+from wisewolf.common import MongoDao
 import json
 from flask import Markup
 
@@ -29,14 +30,7 @@ def search_room(request):
 
 def get_list_from_mongo(keyword, search_mode, req_seq):
 	if search_mode["search_by"]== "tag":
-		try:
-			room_list= Mongo_Wisewolf.tags.find_one({"tag":keyword},{"room_list.room_seq":1})["room_list"]
-		except TypeError as e:
-			return []
-		room_seq_list=[]
-		for room in room_list:
-			room_seq_list.append(room["room_seq"])
-		return Mongo_Wisewolf.rooms.find({"room_seq":{"$in":room_seq_list}}).sort("_id",-1).skip(req_seq).limit(20)
+		return MongoDao.Mongo_search_room_by_tag(keyword, search_mode, req_seq)
 	elif search_mode["search_by"]== "title":
 		try:
 			return Mongo_Wisewolf.rooms.find({"room_title":{"$regex":"(?i).*"+re_escape(keyword)+".*"}}).sort("_id",-1).skip(req_seq).limit(20)
