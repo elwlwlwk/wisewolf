@@ -5,6 +5,7 @@ from wisewolf.websocket.chatting.Room import Room
 from wisewolf.websocket.chatting.chat_handler import ChattingHandler
 
 from test.mock import mock_request, mock_chatter, mock_redisSession
+from test.testdb import MongoDao
 
 class TestRoom(unittest.TestCase):
 	def setUp(self):
@@ -19,7 +20,7 @@ class TestRoom(unittest.TestCase):
 
 		self.redis_conn= mock_redisSession()
 		self.room= Room("test_room", session= self.redis_conn,\
-room_collection= self.room_collection, chat_log_collection= self.chat_log_collection)
+room_collection= self.room_collection, chat_log_collection= self.chat_log_collection, MongoDao= MongoDao)
 
 	def tearDown(self):
 		self.room_collection.drop()
@@ -251,8 +252,7 @@ room_collection= self.room_collection, chat_log_collection= self.chat_log_collec
 			messages.append(message)
 		for message in messages:
 			self.room.save_chat_mongo(message)
-		mongo_room_id= self.room_collection.find_one({'room_seq':self.room.room_seq})["_id"]
-		self.assertEqual(self.chat_log_collection.find_one({'room_id':mongo_room_id})["chat_log"], messages)
+		self.assertEqual(self.chat_log_collection.find_one({'room_seq':self.room.room_seq})["chat_log"], messages)
 
 	def test_get_chat_seq(self):
 		self.assertEqual(self.room.get_chat_seq(), 0)

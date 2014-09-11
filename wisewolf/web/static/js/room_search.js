@@ -24,7 +24,7 @@ require([
 				tag.setAttribute("class", "btn-outline");
 				tag.setAttribute("name", "tag");
 				tag.setAttribute("style", "word-break: break-all;");
-				tag.innerHTML= sorted_tags[i][1];
+				tag.innerHTML= sorted_tags[i][1]+":"+sorted_tags[i][0]+" ";
 				td_info_tags.appendChild(tag);
 				td_info_tags.appendChild(text);
 			}

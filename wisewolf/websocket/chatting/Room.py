@@ -9,19 +9,17 @@ from types import *
 from operator import itemgetter
 
 from wisewolf.db_pool import Mongo_Wisewolf, redis_RoomSession, redis_UserSession
+from wisewolf.common import MongoDao
 
 class Room:
-	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None):
+	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None, MongoDao= MongoDao):
 		self.room_seq= room_seq
 		self.chatters=[]
 		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
 		db=Mongo_Wisewolf
+		self.MongoDao=MongoDao
 
-		if room_collection is None:
-			self.room_collection= db.rooms
-		else:
-			self.room_collection= room_collection
 		if chat_log_collection is None:
 			self.chat_log_collection= db.chat_log
 		else:
@@ -31,7 +29,7 @@ class Room:
 		self.heartbeat_key= urandom(12)
 		self.chat_seq= self.get_chat_seq()+1
 
-		self.room_meta= self.room_collection.find_one({"room_seq":self.room_seq})
+		self.room_meta= self.MongoDao.find_room(self.room_seq)
 	
 	def outdate(self):
 		self.room_meta["out_dated"]= True
@@ -178,13 +176,12 @@ class Room:
 	
 	def save_chat_mongo(self, message, append= True):
 		if append is True:
-			room_document= self.room_collection.find_one({"room_seq":self.room_seq})
-			chat_log_document= self.chat_log_collection.find_one({"room_id":room_document["_id"]},{"_id":1})
+			room_document= self.MongoDao.find_room(self.room_seq, {"room_seq":1})
+			chat_log_document= self.MongoDao.find_chat(self.room_seq, {"_id":1})
 			if chat_log_document is None:
-				chat_data={"room_id":room_document["_id"], "chat_log":[message]}
-				self.chat_log_collection.insert(chat_data)
+				self.MongoDao.insert_chat(room_document["room_seq"],[message])
 			else:
-				self.chat_log_collection.update({"room_id":room_document["_id"]},{"$addToSet":{"chat_log":message}})
+				self.MongoDao.add_chat(room_document["room_seq"], message)
 		else:
 			pass
 	
@@ -197,17 +194,17 @@ class Room:
 			return chat_log[len(chat_log)-1]["chat_seq"]
 	
 	def load_chat_mongo(self, last_index=0, threshold=20, last_chat= False):
-		room_document= self.room_collection.find_one({"room_seq":self.room_seq},{"_id":1})
+		room_document= self.MongoDao.find_room(self.room_seq, {"room_seq":1})
 		if room_document is None:
 			return []
 		else:
-			mongo_room_id= room_document["_id"]
-			chat_log_document= self.chat_log_collection.find_one({"room_id":mongo_room_id},{"_id":1})
+			mongo_room_seq= room_document["room_seq"]
+			chat_log_document= self.MongoDao.find_chat(mongo_room_seq, {"_id":1})
 			if chat_log_document is None:
 				return []
 			if last_chat is True:
-				return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":threshold*-1}})["chat_log"]
+				return self.MongoDao.find_chat(mongo_room_seq, {"chat_log":{"$slice":threshold*-1}})["chat_log"]
 			else:
 				if last_index-threshold < 0:
-					return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":[0, last_index-1]}})["chat_log"]
-				return self.chat_log_collection.find_one({"room_id":mongo_room_id},{"chat_log":{"$slice":[last_index-threshold-1, threshold]}})["chat_log"]
+					return self.MongoDao.find_chat(mongo_room_seq,{"chat_log":{"$slice":[0, last_index-1]}})["chat_log"]
+				return self.MongoDao.find_chat(mongo_room_seq,{"chat_log":{"$slice":[last_index-threshold-1, threshold]}})["chat_log"]

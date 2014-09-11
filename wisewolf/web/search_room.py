@@ -3,8 +3,6 @@ from wisewolf.common import MongoDao
 import json
 from flask import Markup
 
-from re import escape as re_escape
-
 def search_room(request):
 	search_request={}
 	try:
@@ -31,10 +29,6 @@ def search_room(request):
 
 def get_list_from_mongo(keyword, search_mode, req_seq):
 	if search_mode["search_by"]== "tag":
-		return MongoDao.Mongo_search_room_by_tag(keyword, search_mode, req_seq)
+		return MongoDao.search_room_by_tag(keyword, search_mode, req_seq)
 	elif search_mode["search_by"]== "title":
-		try:
-			return Mongo_Wisewolf.rooms.find({"room_title":{"$regex":"(?i).*"+re_escape(keyword)+".*"}}).sort("_id",-1).skip(req_seq).limit(20)
-		except Exception as e:
-			print("Exception: search_room.get_list_from_mongo:",e)
-			return []
+		return MongoDao.search_room_by_title(keyword, search_mode, req_seq)

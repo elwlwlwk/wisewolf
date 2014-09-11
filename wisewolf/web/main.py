@@ -12,7 +12,7 @@ import binascii
 import time
 import wisewolf.web.views as views
 import wisewolf.web.config
-from wisewolf.common import Room_Validator
+from wisewolf.common import Room_Validator, MongoDao
 
 from pymongo import MongoClient
 import json
@@ -99,7 +99,7 @@ def get_room_info():
 		req_room_seq= info_request["room_seq"]
 		result= g.mongo.rooms.find_one({"room_seq":req_room_seq})
 
-		tag_list= g.mongo.tags.find({"room_list.room_seq": req_room_seq})
+		tag_list= MongoDao.get_room_tag_list(req_room_seq)
 		tags=[]
 		for tag in tag_list:
 			for room in tag["room_list"]:

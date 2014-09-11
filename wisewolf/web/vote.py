@@ -1,4 +1,6 @@
 from flask import g, session
+from wisewolf.common import MongoDao
+
 def vote_tag(room_seq, dest_tag, pros_cons, new_tag= True):
 	room= g.mongo.rooms.find_one({"room_seq":room_seq})
 	voted_members= room["voted_members"]
@@ -31,7 +33,7 @@ def get_tag_status(room_seq):
 		result["voted_members"]= g.mongo.rooms.find_one({"room_seq":room_seq},{"voted_members":1})["voted_members"]
 	except Exception as e:
 		result["voted_members"]=[]
-	tags= g.mongo.tags.find({"room_list.room_seq":room_seq})
+	tags= MongoDao.get_room_tag_list(room_seq)
 	for tag in tags:
 		for vote in tag["room_list"]:
 			if vote["room_seq"]== room_seq:
