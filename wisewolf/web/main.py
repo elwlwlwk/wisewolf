@@ -97,7 +97,7 @@ def get_room_info():
 		info_request= request.get_json(force=True)
 
 		req_room_seq= info_request["room_seq"]
-		result= g.mongo.rooms.find_one({"room_seq":req_room_seq})
+		result= MongoDao.find_room(req_room_seq)
 
 		tag_list= MongoDao.get_room_tag_list(req_room_seq)
 		tags=[]
@@ -123,7 +123,7 @@ def get_room_list():
 def chattingroom(path):
 #	print "path: "+path
 	r= redis_RoomSession
-	val= g.mongo.rooms.find_one({"room_seq":path})
+	val= MongoDao.find_room(path)
 
 	if path =='new':
 		if request.method!= 'POST':
@@ -155,19 +155,19 @@ def create_new_room(r, room_id, request):
 	room_data={"room_seq":room_id, "room_title": room_info["room_title"], "room_kind": room_info["room_kind"],
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
 "voted_members":[], "out_dated":False}
-	g.mongo.rooms.insert(room_data)
+	MongoDao.insert_room(room_data)
 
-	if g.mongo.tags.update({"tag":"tag_me"},{"$addToSet":{"room_list":{"room_seq":room_id, "up":0, "down":0}}})["updatedExisting"]== False:
-		g.mongo.tags.insert({"tag":"tag_me", "room_list":[{"room_seq":room_id, "up":0, "down":0}]})
+	if MongoDao.update_tag("tag_me", room_id, 0, 0)["updatedExisting"]== False:
+		MongoDao.insert_tag("tag_me", room_id, 0, 0)
 	if request.form["room_kind"]== "versus":
-		room_data={"room_seq":room_id+"_supportA", "room_title": "", "room_kind": room_info["room_kind"],
+		room_data={"room_seq":room_id+"_supportA", "room_title": "", "room_kind": "support",
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
 "voted_members":[], "out_dated":False}
-		g.mongo.rooms.insert(room_data)
-		room_data={"room_seq":room_id+"_supportB", "room_title": "", "room_kind": room_info["room_kind"],
+		MongoDao.insert_room(room_data)
+		room_data={"room_seq":room_id+"_supportB", "room_title": "", "room_kind": "support",
 "open_time": room_info["open_time"], "max_participants": room_info["max_participants"],
 "voted_members":[], "out_dated":False}
-		g.mongo.rooms.insert(room_data)
+		MongoDao.insert_room(room_data)
 
 @app.route('/gallery')
 def gallery():
