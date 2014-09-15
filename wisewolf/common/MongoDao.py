@@ -84,16 +84,37 @@ class MongoDao:
 			print("Exception: MongoDao.MongoDao.insert_room:",e)
 			return []
 	
-	def update_tag(self, tag, room_seq, up, down):
+	def update_tag(self, tag, room_list):
 		try:
-			return self.db.tags.update({"tag":tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":up, "down":down}}})
+			return self.db.tags.update({"tag":tag},{"$set":{"room_list":room_list}})
 		except:
 			print("Exception: MongoDao.MongoDao.update_tag:",e)
 			return []
 	
+	def add_room_to_tag(self, tag, room_seq, up, down):
+		try:
+			return self.db.tags.update({"tag":tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":up, "down":down}}})
+		except:
+			print("Exception: MongoDao.MongoDao.add_room_to_tag:",e)
+			return []
+
 	def insert_tag(self, tag, room_seq, up, down):
 		try:
 			return self.db.tags.insert({"tag":tag, "room_list":[{"room_seq":room_seq, "up":up, "down":down}]})
 		except:
 			print("Exception: MongoDao.MongoDao.insert_tag:",e)
+			return []
+	
+	def find_tag(self, tag):
+		try:
+			return self.db.tags.find_one({"tag":tag})
+		except:
+			print("Exception: MongoDao.MongoDao.find_tag:",e)
+			return []
+	
+	def add_voted_user(self, room_seq, user_id):
+		try:
+			return self.db.rooms.update({"room_seq":room_seq},{"$addToSet":{"voted_members":user_id}})
+		except:
+			print("Exception: MongoDao.MongoDao.add_voted_user:",e)
 			return []
