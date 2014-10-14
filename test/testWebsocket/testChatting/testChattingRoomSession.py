@@ -4,6 +4,7 @@ from wisewolf.websocket.chatting.ChattingRoomSession import ChattingRoomSession
 
 from wisewolf.db_pool import redis_RoomSession
 from pymongo import MongoClient
+from test.testdb import db
 
 from test.mock import mock_redisSession
 
@@ -12,8 +13,6 @@ class TestChattingRoomSession(unittest.TestCase):
 		self.redis_conn= mock_redisSession()
 
 		client= MongoClient()
-		db= client.test_wisewolf
-		db.authenticate("test_wisewolf","test_wisewolf")
 		self.room_collection= db.rooms
 		self.chat_log_collection= db.chat_log
 

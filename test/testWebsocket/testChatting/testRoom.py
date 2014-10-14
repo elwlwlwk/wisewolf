@@ -1,17 +1,13 @@
 import unittest
 import json
-from pymongo import MongoClient
 from wisewolf.websocket.chatting.Room import Room
 from wisewolf.websocket.chatting.chat_handler import ChattingHandler
 
 from test.mock import mock_request, mock_chatter, mock_redisSession
-from test.testdb import MongoDao
+from test.testdb import MongoDao, db
 
 class TestRoom(unittest.TestCase):
 	def setUp(self):
-		client= MongoClient()
-		db= client.test_wisewolf
-		db.authenticate("test_wisewolf","test_wisewolf")
 		self.room_collection= db.rooms
 		self.chat_log_collection= db.chat_log
 
