@@ -34,7 +34,7 @@ class MongoDao:
 	
 	def search_room_by_title(self, keyword="", search_mode={}, req_seq=0, limit=20):
 		try:
-			return Mongo_Wisewolf.rooms.find({"room_title":{"$regex":"(?i).*"+re_escape(keyword)+".*"}}).sort("_id",-1).skip(req_seq).limit(20)
+			return Mongo_Wisewolf.rooms.find({"room_title":{"$regex":"(?i).*"+re_escape(keyword)+".*"}, "room_kind":{"$ne":"support"}}).sort("_id",-1).skip(req_seq).limit(20)
 		except Exception as e:
 			print("Exception: MongoDao.MongoDao.Mongo_search_room_by_title:",e)
 			return []
@@ -73,4 +73,48 @@ class MongoDao:
 		except:
 			print("Exception: MongoDao.MongoDao.add_chat:",e)
 			return []
+	
+	def insert_room(self, room_data):
+		try:
+			if "room_seq" in room_data and "room_title" in room_data and "room_kind" in room_data and "open_time" in room_data and "out_dated" in room_data:
+				return self.db.rooms.insert(room_data)
+			else:
+				raise KeyError("insufficient key")
+		except:
+			print("Exception: MongoDao.MongoDao.insert_room:",e)
+			return []
+	
+	def update_tag(self, tag, room_list):
+		try:
+			return self.db.tags.update({"tag":tag},{"$set":{"room_list":room_list}})
+		except:
+			print("Exception: MongoDao.MongoDao.update_tag:",e)
+			return []
+	
+	def add_room_to_tag(self, tag, room_seq, up, down):
+		try:
+			return self.db.tags.update({"tag":tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":up, "down":down}}})
+		except:
+			print("Exception: MongoDao.MongoDao.add_room_to_tag:",e)
+			return []
 
+	def insert_tag(self, tag, room_seq, up, down):
+		try:
+			return self.db.tags.insert({"tag":tag, "room_list":[{"room_seq":room_seq, "up":up, "down":down}]})
+		except:
+			print("Exception: MongoDao.MongoDao.insert_tag:",e)
+			return []
+	
+	def find_tag(self, tag):
+		try:
+			return self.db.tags.find_one({"tag":tag})
+		except:
+			print("Exception: MongoDao.MongoDao.find_tag:",e)
+			return []
+	
+	def add_voted_user(self, room_seq, user_id):
+		try:
+			return self.db.rooms.update({"room_seq":room_seq},{"$addToSet":{"voted_members":user_id}})
+		except:
+			print("Exception: MongoDao.MongoDao.add_voted_user:",e)
+			return []
