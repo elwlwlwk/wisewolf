@@ -93,7 +93,7 @@ class MongoDao:
 	
 	def add_room_to_tag(self, tag, room_seq, up, down):
 		try:
-			return self.db.tags.update({"tag":tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":up, "down":down}}})
+			return self.db.tags.update({"tag":tag},{"$addToSet":{"room_list":{"room_seq":room_seq, "up":up, "down":down}}}, w=1)
 		except:
 			print("Exception: MongoDao.MongoDao.add_room_to_tag:",e)
 			return []
