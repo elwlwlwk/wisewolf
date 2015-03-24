@@ -18,9 +18,7 @@ class ChattingHandler(tornado.websocket.WebSocketHandler):
 		print("[room enter request] "+self.request.headers["X-Real-Ip"]+" "+self.name+" "+self.request.uri)
 		if chatting_room_session.validate_room(req_room):
 			chatting_room_session.add_room(req_room)
-
 			chatting_room_session.rooms[req_room].add_waiting_chatter(self)
-			
 		else:
 			self.close()
 
