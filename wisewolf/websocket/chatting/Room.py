@@ -15,7 +15,6 @@ class Room:
 	def __init__(self, room_seq, session=redis_RoomSession, room_collection= None, chat_log_collection= None, MongoDao= MongoDao):
 		self.room_seq= room_seq
 		self.chatters=[]
-		self.waiting_chatters=[] #waiting for first connect handshake
 		self.redis_conn= session
 		db=Mongo_Wisewolf
 		self.MongoDao=MongoDao
@@ -34,11 +33,8 @@ class Room:
 	def outdate(self):
 		self.room_meta["out_dated"]= True
 
-	def add_waiting_chatter(self, chatter):
-		chatter.set_my_room(self)
-		self.waiting_chatters.append(chatter)
-
 	def add_chatter(self, chatter):
+		chatter.set_my_room(self)
 		try:
 			if self.room_meta["max_participants"]!= ''and len(self.chatters)>= int(self.room_meta["max_participants"]):
 				chatter.role="observer"
@@ -143,8 +139,8 @@ class Room:
 		self.broadcast_chat(chatter, message)
 	
 	def handle_first_handshake(self, chatter, user_id=""):
-		if chatter in self.waiting_chatters:
-			self.waiting_chatters.remove(chatter)
+		if chatter in self.chatters:
+			self.chatters.remove(chatter)
 			redis= redis_UserSession
 			val = redis.get("session:"+ user_id)
 			if val is not None:
