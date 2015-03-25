@@ -14,10 +14,16 @@ define([
 			this.list_chatters=[];
 		},
 		connect_server:function(host){
+			this.host= host;
 			this.ws= dojox.socket(host);
 			this.ws.chat= this;
-			dojo.connect(this.ws,"onmessage", this.messageHandler);
-			dojo.connect(this.ws,"onopen", this.openHandler);
+			//dojo.connect(this.ws,"onmessage", this.messageHandler);
+			//dojo.connect(this.ws,"onopen", this.openHandler);
+			this.ws.on("open", this.openHandler);
+			this.ws.on("message", this.messageHandler);
+		},
+		reconnect:function(e){
+			this.ws= dojox.socket(this.host);
 		},
 		messageHandler:function(e){
 			var myData= JSON.parse(e.data);

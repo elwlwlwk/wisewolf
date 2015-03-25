@@ -74,7 +74,7 @@ require([
 			tag.setAttribute("class", "btn btn-default btn-xs");
 			tag.setAttribute("type", "button");
 			tag.setAttribute("name", "tag");
-			if(disable_tagging== true){
+			if(disable_tagging== true || sorted_tags[i][1]=="tag_me"){
 				tag.disabled= true;
 			}
 			tag.innerHTML= sorted_tags[i][1]+":["+sorted_tags[i][0]+","+sorted_tags[i][2]+"]";
